@@ -1,0 +1,59 @@
+maestru: "0.4"
+
+colors:
+  purple:
+    text: "#9333ea"
+    bg: "#faf5ff"
+    border: "#9333ea"
+  blue:
+    text: "#2563eb"
+    bg: "#eff6ff"
+    border: "#2563eb"
+  green:
+    text: "#16a34a"
+    bg: "#f0fdf4"
+    border: "#16a34a"
+  amber:
+    text: "#d97706"
+    bg: "#fffbeb"
+    border: "#d97706"
+  red:
+    text: "#dc2626"
+    bg: "#fef2f2"
+    border: "#dc2626"
+  gray:
+    text: "#4b5563"
+    bg: "#f9fafb"
+    border: "#9ca3af"
+
+callouts:
+  info:
+    color: blue
+    icon: info
+    label: Info
+  warning:
+    color: amber
+    icon: warning
+    label: Warning
+  success:
+    color: green
+    icon: check
+    label: Success
+  danger:
+    color: red
+    icon: alert
+    label: Danger
+  tip:
+    color: purple
+    icon: lightbulb
+    label: Tip
+
+badges:
+  stable:
+    color: green
+  beta:
+    color: amber
+  deprecated:
+    color: red
+  new:
+    color: blue

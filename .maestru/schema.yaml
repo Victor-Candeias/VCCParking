@@ -1,0 +1,88 @@
+maestru: "0.4"
+
+common:
+  fields:
+    id:
+      type: string
+      required: true
+    title:
+      type: string
+      required: true
+    created:
+      type: date
+      required: true
+    owner:
+      type: user
+
+types:
+  work-track:
+    fields:
+      description:
+        type: string
+    statuses:
+      values:
+        - id: draft
+          category: open
+          color: gray
+        - id: active
+          category: active
+          color: green
+        - id: on-hold
+          category: open
+          color: amber
+        - id: archived
+          category: archived
+          color: gray
+      default: active
+      terminal: [archived]
+
+  work-item:
+    fields:
+      priority:
+        type: enum
+        values: [critical, high, medium, low]
+      completed:
+        type: date
+      template:
+        type: string
+    statuses:
+      values:
+        - id: backlog
+          category: open
+          color: gray
+        - id: assigned
+          category: open
+          color: blue
+        - id: in-progress
+          category: active
+          color: amber
+        - id: done
+          category: closed
+          color: green
+        - id: archived
+          category: archived
+          color: gray
+      default: backlog
+      terminal: [done, archived]
+
+  work-spec:
+    fields:
+      work-item:
+        type: string
+        required: true
+      template:
+        type: string
+        default: implementation-plan-v1
+
+  doc:
+    fields:
+      description:
+        type: string
+        required: true
+      updated:
+        type: date
+        required: true
+      tags:
+        type: multiselect
+      template:
+        type: string

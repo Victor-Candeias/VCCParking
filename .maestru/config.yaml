@@ -1,0 +1,14 @@
+maestru: "0.4"
+
+allowedAuthors: [developer]
+
+# templates:
+#   doc:
+#     mandatory: []
+#     optional: []
+#   work-item:
+#     enforced: false
+#     list: []
+#   work-spec:
+#     enforced: false
+#     list: []
