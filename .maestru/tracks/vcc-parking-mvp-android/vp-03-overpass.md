@@ -5,7 +5,9 @@ id: vp-03-overpass
 title: "Implementar consulta Overpass, parsing e fallback"
 created: 2026-09-30
 priority: critical
-status: backlog
+status: done
+owner: developer
+completed: 2026-09-30
 track: vcc-parking-mvp-android
 specs:
   - vp-03-overpass-spec
