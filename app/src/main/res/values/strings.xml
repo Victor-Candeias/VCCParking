@@ -1,5 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:locale="pt">
     <string name="app_name">VCC Parking</string>
     <string name="osm_attribution">© OpenStreetMap contributors</string>
+
+    <string name="location_title">Localização</string>
+    <string name="location_loading">A obter a sua localização…</string>
+    <string name="location_idle">Toque em atualizar para obter a sua localização.</string>
+    <string name="location_coordinates">%1$.5f, %2$.5f</string>
+    <string name="location_accuracy">Precisão aproximada: %1$d m</string>
+    <string name="location_accuracy_unknown">Precisão desconhecida.</string>
+    <string name="location_permission_rationale">A localização é necessária para procurar parques de estacionamento perto de si.</string>
+    <string name="location_permission_denied">Sem acesso à localização não é possível procurar parques próximos. Pode ativar a permissão nas definições da aplicação.</string>
+    <string name="location_disabled">A localização do dispositivo está desligada.</string>
+    <string name="location_unavailable">Não foi possível obter a sua localização neste momento.</string>
+    <string name="location_action_allow">Permitir localização</string>
+    <string name="location_action_settings">Abrir definições da aplicação</string>
+    <string name="location_action_location_settings">Abrir definições de localização</string>
+    <string name="location_action_retry">Tentar novamente</string>
+    <string name="location_action_refresh">Atualizar</string>
 </resources>
