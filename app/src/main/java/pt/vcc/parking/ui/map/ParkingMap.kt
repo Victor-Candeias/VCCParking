@@ -36,6 +36,7 @@ fun ParkingMap(
     modifier: Modifier = Modifier,
     parkedCar: ParkedCar? = null,
     initialCenter: MapPoint? = null,
+    routePoints: List<MapPoint> = emptyList(),
     onParkingSelected: (Parking) -> Unit = {},
     onParkedCarSelected: () -> Unit = {},
     onCenterChanged: (latitude: Double, longitude: Double) -> Unit = { _, _ -> },
@@ -85,6 +86,10 @@ fun ParkingMap(
         factory = { mapView },
         update = { map ->
             map.overlays.clear()
+            // A linha vai por baixo de tudo: o que interessa tocar sao os pinos.
+            if (routePoints.size >= MINIMUM_ROUTE_POINTS) {
+                map.overlays.add(map.routeOverlay(routePoints))
+            }
             parking.forEach { map.overlays.add(map.parkingMarker(it, currentOnParkingSelected)) }
             // Adicionados por ultimo para ficarem por cima dos marcadores dos parques.
             parkedCar?.let { map.overlays.add(map.parkedCarMarker(it, currentOnParkedCarSelected)) }
@@ -147,3 +152,6 @@ private fun MapView.userMarker(location: UserLocation): Marker = Marker(this).ap
 }
 
 private fun Context.drawable(resourceId: Int) = ContextCompat.getDrawable(this, resourceId)
+
+/** Uma linha precisa de dois pontos; com menos nao ha nada para desenhar. */
+private const val MINIMUM_ROUTE_POINTS = 2

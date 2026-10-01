@@ -5,12 +5,16 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.app.ActivityCompat
@@ -21,6 +25,7 @@ import pt.vcc.parking.location.LocationUiState
 import pt.vcc.parking.location.LocationViewModel
 import pt.vcc.parking.location.hasLocationPermission
 import pt.vcc.parking.parked.ParkedCarViewModel
+import pt.vcc.parking.ui.returnroute.ReturnRouteScreen
 
 /**
  * Liga a localizacao de `vp-02-location` a pesquisa de parques.
@@ -54,6 +59,11 @@ fun ParkingRoute(
         }
     }
 
+    // A app tem dois ecras e nenhuma biblioteca de navegacao: um unico sinal
+    // chega e sobrevive a rotacao. Trazer uma dependencia de navegacao para
+    // isto custaria mais do que resolve.
+    var returningToCar by rememberSaveable { mutableStateOf(false) }
+
     LaunchedEffect(Unit) {
         if (context.hasLocationPermission()) {
             locationViewModel.refreshLocation()
@@ -65,6 +75,16 @@ fun ParkingRoute(
     LaunchedEffect(locationState) {
         val available = locationState as? LocationUiState.Available ?: return@LaunchedEffect
         parkingViewModel.onUserLocation(available.location)
+    }
+
+    if (returningToCar) {
+        BackHandler { returningToCar = false }
+
+        ReturnRouteScreen(
+            modifier = modifier,
+            onBack = { returningToCar = false },
+        )
+        return
     }
 
     ParkingScreen(
@@ -82,6 +102,7 @@ fun ParkingRoute(
         onRetry = parkingViewModel::retry,
         onParkHere = parkedCarViewModel::parkHere,
         onParkAt = { latitude, longitude -> parkedCarViewModel.parkAt(latitude, longitude) },
+        onReturnToCar = { returningToCar = true },
         onMoveParkedCar = parkedCarViewModel::moveTo,
         onUpdateParkedCarDetails = parkedCarViewModel::updateDetails,
         onEndParkedCar = parkedCarViewModel::endActive,

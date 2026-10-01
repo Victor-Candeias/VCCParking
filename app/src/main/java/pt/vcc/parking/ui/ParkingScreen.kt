@@ -74,6 +74,7 @@ fun ParkingScreen(
     onRetry: () -> Unit = {},
     onParkHere: (Parking?) -> Unit = {},
     onParkAt: (latitude: Double, longitude: Double) -> Unit = { _, _ -> },
+    onReturnToCar: () -> Unit = {},
     onMoveParkedCar: (id: Long, latitude: Double, longitude: Double) -> Unit = { _, _, _ -> },
     onUpdateParkedCarDetails: (id: Long, note: String?, photoUri: String?) -> Unit =
         { _, _, _ -> },
@@ -111,6 +112,7 @@ fun ParkingScreen(
                 },
                 onParkHere = onParkHere,
                 onParkAt = onParkAt,
+                onReturnToCar = onReturnToCar,
                 onMoveParkedCar = onMoveParkedCar,
                 onUpdateParkedCarDetails = onUpdateParkedCarDetails,
                 onEndParkedCar = onEndParkedCar,
@@ -143,6 +145,7 @@ private fun ParkingContent(
     onNavigate: (Parking) -> Unit = {},
     onParkHere: (Parking?) -> Unit = {},
     onParkAt: (latitude: Double, longitude: Double) -> Unit = { _, _ -> },
+    onReturnToCar: () -> Unit = {},
     onMoveParkedCar: (id: Long, latitude: Double, longitude: Double) -> Unit = { _, _, _ -> },
     onUpdateParkedCarDetails: (id: Long, note: String?, photoUri: String?) -> Unit =
         { _, _, _ -> },
@@ -220,6 +223,7 @@ private fun ParkingContent(
             ParkedCarCard(
                 parkedCar = parkedCar,
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                onReturnToCar = onReturnToCar,
                 onEdit = { editingParkedCar = true },
                 onAdjustOnMap = {
                     pinTarget = PinTarget(

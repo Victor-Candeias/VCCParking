@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -56,6 +57,7 @@ import pt.vcc.parking.ui.theme.VccParkingTheme
 fun ParkedCarCard(
     parkedCar: ParkedCar,
     modifier: Modifier = Modifier,
+    onReturnToCar: () -> Unit = {},
     onEdit: () -> Unit = {},
     onAdjustOnMap: () -> Unit = {},
     onEnd: () -> Unit = {},
@@ -104,6 +106,15 @@ fun ParkedCarCard(
                         .height(PHOTO_HEIGHT)
                         .clip(RoundedCornerShape(12.dp)),
                 )
+            }
+
+            // A accao principal do cartao: com o carro guardado, o passo
+            // seguinte e voltar la (`vp-09-return-route`).
+            Button(
+                onClick = onReturnToCar,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text(stringResource(R.string.return_action_guide_me))
             }
 
             Row(

@@ -18,18 +18,7 @@ private const val TAG = "ExternalNavigation"
  * Devolve `false` quando nao existe aplicacao capaz de tratar o esquema `geo:`,
  * para que o ecra possa avisar o utilizador em vez de rebentar.
  */
-fun Context.openExternalNavigation(parking: Parking): Boolean {
-    val intent = Intent(Intent.ACTION_VIEW, parking.toGeoUri())
-        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-
-    return try {
-        startActivity(intent)
-        true
-    } catch (notFound: ActivityNotFoundException) {
-        Log.w(TAG, "Sem aplicacao para o esquema geo:", notFound)
-        false
-    }
-}
+fun Context.openExternalNavigation(parking: Parking): Boolean = start(parking.toGeoUri())
 
 /**
  * O `q=` garante que o destino fica marcado e nao apenas centrado. O nome segue
@@ -43,6 +32,42 @@ private fun Parking.toGeoUri(): Uri {
         name?.let { append("(${Uri.encode(it)})") }
     }
     return query.toUri()
+}
+
+/**
+ * Abre a navegacao a pe ate ao carro (`vp-09-return-route`).
+ *
+ * O esquema `geo:` nao tem forma de pedir um modo de transporte, por isso e
+ * tentado primeiro o `google.navigation:` com `mode=w`, que o percebe. Sem
+ * aplicacao que o trate, a queda para `geo:` continua a levar o utilizador ao
+ * ponto certo — apenas com o modo por omissao.
+ */
+fun Context.openWalkingNavigation(
+    latitude: Double,
+    longitude: Double,
+    label: String? = null,
+): Boolean {
+    val coordinates = "${latitude.asCoordinate()},${longitude.asCoordinate()}"
+
+    val walking = "google.navigation:q=$coordinates&mode=w".toUri()
+    val fallback = buildString {
+        append("geo:$coordinates?q=$coordinates")
+        label?.let { append("(${Uri.encode(it)})") }
+    }.toUri()
+
+    return start(walking) || start(fallback)
+}
+
+private fun Context.start(uri: Uri): Boolean {
+    val intent = Intent(Intent.ACTION_VIEW, uri).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+
+    return try {
+        startActivity(intent)
+        true
+    } catch (notFound: ActivityNotFoundException) {
+        Log.w(TAG, "Sem aplicacao para o esquema ${uri.scheme}", notFound)
+        false
+    }
 }
 
 // Uma locale com virgula decimal produziria um URI que nenhum mapa interpreta.

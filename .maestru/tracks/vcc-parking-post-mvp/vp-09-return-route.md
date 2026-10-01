@@ -6,7 +6,8 @@ title: Guiar o utilizador de volta ao carro
 created: 2026-10-01
 owner: developer
 priority: high
-status: backlog
+status: done
+completed: 2026-10-01
 track: vcc-parking-post-mvp
 blocked-by:
   - vp-08-park-save

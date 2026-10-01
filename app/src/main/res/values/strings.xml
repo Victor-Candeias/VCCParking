@@ -131,4 +131,21 @@
 
     <string name="parked_pin_title">Arraste o mapa até ao local do carro</string>
     <string name="parked_pin_confirm">Guardar aqui</string>
+
+    <!-- vp-09-return-route: regresso ao carro -->
+    <string name="return_title">Voltar ao carro</string>
+    <string name="return_action_guide_me">Voltar ao carro</string>
+    <string name="return_action_back">Voltar</string>
+    <string name="return_action_open_external">Abrir noutra app</string>
+    <string name="return_action_save_position">Guardar a posição</string>
+
+    <string name="return_locating">A obter a sua posição…</string>
+    <string name="return_no_parked_car">Não há nenhum carro guardado. Guarde a posição onde estacionar para poder voltar lá depois.</string>
+
+    <string name="return_distance_to_car">em linha reta até ao carro</string>
+    <string name="return_arriving">Está a chegar. O carro está por perto.</string>
+    <string name="return_arrow_description">Direção do carro</string>
+    <string name="return_no_compass">Este dispositivo não tem bússola, por isso não há seta. A distância continua a ser atualizada.</string>
+    <string name="return_route_summary">A pé: %1$d m, cerca de %2$d min.</string>
+    <string name="return_route_unavailable">Sem rota a pé neste momento. A seta e a distância continuam a funcionar.</string>
 </resources>

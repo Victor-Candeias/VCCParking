@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Seta do regresso ao carro (vp-09-return-route). Aponta para cima no desenho;
+     o ecrã roda-a com o ângulo entre o rumo e a direção do dispositivo. O azul é
+     o mesmo do pino do carro, porque é para lá que aponta. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="96dp"
+    android:height="96dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+    <path
+        android:fillColor="#1D4ED8"
+        android:pathData="M12,2L20.5,21L12,17L3.5,21Z" />
+</vector>

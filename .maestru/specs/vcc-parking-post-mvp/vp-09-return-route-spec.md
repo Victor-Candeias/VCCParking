@@ -56,14 +56,15 @@ entre a posição atual e a do carro.
 | Action | File | Details |
 |---|---|---|
 | Create | `.../domain/GeoBearing.kt` | Rumo entre duas coordenadas |
-| Create | `.../return/CompassProvider.kt` | Azimute a partir do sensor de rotação |
-| Create | `.../ui/return/ReturnCompass.kt` | Seta, distância e precisão |
+| Create | `.../returnroute/CompassProvider.kt` | Azimute a partir do sensor de rotação |
+| Create | `.../ui/returnroute/ReturnCompass.kt` | Seta, distância e precisão |
+| Create | `app/src/main/res/drawable/ic_return_arrow.xml` | Seta rodada pelo rumo relativo |
 
 Verificação da fase 1:
 
-- [ ] A seta aponta para o carro ao rodar o dispositivo
-- [ ] Sem sensor de rotação, a distância continua a ser mostrada
-- [ ] Os sensores são libertados em `onPause`
+- [x] A seta aponta para o carro ao rodar o dispositivo
+- [x] Sem sensor de rotação, a distância continua a ser mostrada
+- [x] Os sensores são libertados em `onPause`
 
 ### Phase 2: Rota pedonal
 
@@ -93,27 +94,35 @@ A decisão fica registada na spec de implementação, mas o código depende de u
 
 | Action | File | Details |
 |---|---|---|
+| Create | `.../domain/model/WalkingRoute.kt` | Rota e pontos no domínio |
 | Create | `.../data/remote/RouteService.kt` | Contrato de routing pedonal |
 | Create | `.../data/remote/RouteDto.kt` | Desserialização da resposta |
+| Create | `.../data/remote/RouteApi.kt` | Chamada Retrofit com `@Url` |
+| Create | `.../data/remote/RouteEndpoints.kt` | Instâncias por ordem de preferência |
 | Create | `.../data/remote/RouteClient.kt` | Chamada, timeouts e fallback |
 | Create | `.../data/repository/ReturnRouteRepository.kt` | Rota com degradação para bússola |
 
 Verificação da fase 2:
 
-- [ ] Routing indisponível não bloqueia o ecrã
-- [ ] A rota é redesenhada quando o utilizador se desvia
-- [ ] As coordenadas não são registadas no log
+- [x] Routing indisponível não bloqueia o ecrã
+- [x] A rota é redesenhada quando o utilizador se desvia
+- [x] As coordenadas não são registadas no log
 
 ### Phase 3: Ecrã de regresso
 
 | Action | File | Details |
 |---|---|---|
-| Create | `.../return/ReturnViewModel.kt` | Posição, rumo, rota e estados |
-| Create | `.../return/ReturnUiState.kt` | Estados: sem carro, bússola, rota, chegou |
-| Create | `.../ui/return/ReturnScreen.kt` | Mapa, bússola, distância e nota do local |
-| Create | `.../ui/return/ReturnRouteOverlay.kt` | Linha da rota sobre o mapa |
+| Create | `.../returnroute/ReturnViewModel.kt` | Posição, rumo, rota e estados |
+| Create | `.../returnroute/ReturnUiState.kt` | Estados: sem carro, bússola, rota, chegou |
+| Create | `.../ui/returnroute/ReturnScreen.kt` | Mapa, bússola, distância e nota do local |
+| Create | `.../ui/map/ReturnRouteOverlay.kt` | Linha da rota sobre o mapa |
+| Modify | `.../ui/map/ParkingMap.kt` | Desenha a linha da rota recebida |
 | Modify | `.../ui/ParkingScreen.kt` | Entrada «Voltar ao carro» |
+| Modify | `.../ui/parked/ParkedCarCard.kt` | Botão principal do regresso |
+| Modify | `.../ui/ParkingRoute.kt` | Alterna entre o mapa e o regresso |
+| Modify | `.../VccParkingApplication.kt` | Expõe o `ReturnRouteRepository` |
 | Modify | `.../ui/details/ExternalNavigation.kt` | Intent `geo:` com modo a pé |
+| Modify | `app/src/main/AndroidManifest.xml` | `<queries>` para `google.navigation` |
 | Modify | `app/src/main/res/values/strings.xml` | Textos do ecrã |
 
 O ecrã mostra sempre a nota e a fotografia guardadas em `vp-08-park-save`: num parque
@@ -121,9 +130,9 @@ grande, «piso -2, lugar 134» resolve o problema melhor do que qualquer rota.
 
 Verificação da fase 3:
 
-- [ ] Sem estacionamento ativo, o ecrã explica e oferece guardar
-- [ ] A abertura em app externa degrada com `Snackbar` se não existir
-- [ ] O ecrã continua utilizável em modo avião
+- [x] Sem estacionamento ativo, o ecrã explica e oferece guardar
+- [x] A abertura em app externa degrada com `Snackbar` se não existir
+- [x] O ecrã continua utilizável em modo avião
 
 ### Phase 4: Validação
 
@@ -131,9 +140,20 @@ Verificação da fase 3:
 |---|---|---|
 | Create | `app/src/test/java/pt/vcc/parking/domain/GeoBearingTest.kt` | Rumo em pontos conhecidos |
 | Create | `app/src/test/java/pt/vcc/parking/data/remote/RouteClientTest.kt` | Erros, timeout e fallback |
-| Create | `app/src/test/java/pt/vcc/parking/return/ReturnViewModelTest.kt` | Degradação e chegada |
+| Create | `app/src/test/java/pt/vcc/parking/returnroute/ReturnViewModelTest.kt` | Degradação e chegada |
+| Create | `app/src/test/java/pt/vcc/parking/returnroute/AngleSmoothingTest.kt` | Suavização à volta do norte |
 | Run | `gradlew.bat :app:testDebugUnitTest` | Testes unitários |
 | Run | `gradlew.bat :app:assembleDebug` | Compilação |
+
+## Desvios de implementação
+
+| Decisão da spec | O que foi feito | Motivo |
+|---|---|---|
+| Pacote `.../return/` | `.../returnroute/` e `.../ui/returnroute/` | `return` é palavra reservada em Kotlin |
+| `ReturnRouteOverlay.kt` em `ui/return/` | `ui/map/ReturnRouteOverlay.kt` | O osmdroid não sai do pacote `ui.map`, regra já em vigor em `ParkingMap.kt` |
+| Quatro estados separados | `Locating`, `NoParkedCar` e `Guiding` | Bússola, rota e chegada só diferem em dois campos de `Guiding`; separá-las repetiria tudo o resto |
+| «Sem rede, modo bússola sem tentar a chamada» | Tenta e desiste ao fim de 10 s | Não há sinal fiável de «sem rede» antes do pedido; o `RouteClient` falha depressa e o ecrã nunca fica bloqueado |
+| Instância de routing | `routing.openstreetmap.de/routed-foot`, depois `router.project-osrm.org` | Só a primeira tem perfil pedonal; a segunda fica como último recurso |
 
 ## Riscos
 
@@ -149,19 +169,29 @@ Verificação da fase 3:
 | File | Action | Purpose |
 |------|--------|---------|
 | `app/src/main/java/pt/vcc/parking/domain/GeoBearing.kt` | Create | Cálculo do rumo |
-| `app/src/main/java/pt/vcc/parking/return/CompassProvider.kt` | Create | Azimute do sensor |
+| `app/src/main/java/pt/vcc/parking/domain/model/WalkingRoute.kt` | Create | Rota pedonal no domínio |
+| `app/src/main/java/pt/vcc/parking/returnroute/CompassProvider.kt` | Create | Azimute do sensor |
 | `app/src/main/java/pt/vcc/parking/data/remote/RouteService.kt` | Create | Contrato de routing |
 | `app/src/main/java/pt/vcc/parking/data/remote/RouteDto.kt` | Create | DTO da rota |
+| `app/src/main/java/pt/vcc/parking/data/remote/RouteApi.kt` | Create | Chamada Retrofit |
+| `app/src/main/java/pt/vcc/parking/data/remote/RouteEndpoints.kt` | Create | Instâncias de routing |
 | `app/src/main/java/pt/vcc/parking/data/remote/RouteClient.kt` | Create | Cliente com fallback |
 | `app/src/main/java/pt/vcc/parking/data/repository/ReturnRouteRepository.kt` | Create | Rota com degradação |
-| `app/src/main/java/pt/vcc/parking/return/ReturnViewModel.kt` | Create | Estado do regresso |
-| `app/src/main/java/pt/vcc/parking/return/ReturnUiState.kt` | Create | Estados da UI |
-| `app/src/main/java/pt/vcc/parking/ui/return/ReturnScreen.kt` | Create | Ecrã de regresso |
-| `app/src/main/java/pt/vcc/parking/ui/return/ReturnCompass.kt` | Create | Seta e distância |
-| `app/src/main/java/pt/vcc/parking/ui/return/ReturnRouteOverlay.kt` | Create | Linha da rota |
+| `app/src/main/java/pt/vcc/parking/returnroute/ReturnViewModel.kt` | Create | Estado do regresso |
+| `app/src/main/java/pt/vcc/parking/returnroute/ReturnUiState.kt` | Create | Estados da UI |
+| `app/src/main/java/pt/vcc/parking/ui/returnroute/ReturnScreen.kt` | Create | Ecrã de regresso |
+| `app/src/main/java/pt/vcc/parking/ui/returnroute/ReturnCompass.kt` | Create | Seta e distância |
+| `app/src/main/java/pt/vcc/parking/ui/map/ReturnRouteOverlay.kt` | Create | Linha da rota |
+| `app/src/main/res/drawable/ic_return_arrow.xml` | Create | Seta do modo bússola |
+| `app/src/main/java/pt/vcc/parking/ui/map/ParkingMap.kt` | Modify | Desenha a rota recebida |
 | `app/src/main/java/pt/vcc/parking/ui/ParkingScreen.kt` | Modify | Entrada para o regresso |
+| `app/src/main/java/pt/vcc/parking/ui/ParkingRoute.kt` | Modify | Alternância entre ecrãs |
+| `app/src/main/java/pt/vcc/parking/ui/parked/ParkedCarCard.kt` | Modify | Botão «Voltar ao carro» |
+| `app/src/main/java/pt/vcc/parking/VccParkingApplication.kt` | Modify | Repositório da rota |
 | `app/src/main/java/pt/vcc/parking/ui/details/ExternalNavigation.kt` | Modify | Modo a pé |
+| `app/src/main/AndroidManifest.xml` | Modify | `<queries>` de navegação |
 | `app/src/main/res/values/strings.xml` | Modify | Textos do ecrã |
 | `app/src/test/java/pt/vcc/parking/domain/GeoBearingTest.kt` | Create | Testes do rumo |
 | `app/src/test/java/pt/vcc/parking/data/remote/RouteClientTest.kt` | Create | Testes do cliente |
-| `app/src/test/java/pt/vcc/parking/return/ReturnViewModelTest.kt` | Create | Testes do ViewModel |
+| `app/src/test/java/pt/vcc/parking/returnroute/ReturnViewModelTest.kt` | Create | Testes do ViewModel |
+| `app/src/test/java/pt/vcc/parking/returnroute/AngleSmoothingTest.kt` | Create | Testes da suavização |

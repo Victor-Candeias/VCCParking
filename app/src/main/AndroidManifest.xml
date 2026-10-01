@@ -6,11 +6,17 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
-    <!-- Seccao 25: visibilidade do pacote necessaria para resolver o esquema geo:. -->
+    <!-- Seccao 25: visibilidade do pacote necessaria para resolver o esquema geo:.
+         O google.navigation: e o unico que aceita modo a pe (vp-09-return-route);
+         sem esta entrada a resolucao falharia sempre e a app cairia no geo:. -->
     <queries>
         <intent>
             <action android:name="android.intent.action.VIEW" />
             <data android:scheme="geo" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="google.navigation" />
         </intent>
     </queries>
 

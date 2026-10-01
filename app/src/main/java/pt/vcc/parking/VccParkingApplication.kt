@@ -5,8 +5,10 @@ import org.osmdroid.config.Configuration
 import pt.vcc.parking.data.local.ParkingDatabase
 import pt.vcc.parking.data.local.RoomParkingCache
 import pt.vcc.parking.data.remote.OverpassClient
+import pt.vcc.parking.data.remote.RouteClient
 import pt.vcc.parking.data.repository.ParkedCarRepository
 import pt.vcc.parking.data.repository.ParkingRepository
+import pt.vcc.parking.data.repository.ReturnRouteRepository
 
 class VccParkingApplication : Application() {
 
@@ -21,6 +23,10 @@ class VccParkingApplication : Application() {
 
     val parkedCarRepository: ParkedCarRepository by lazy {
         ParkedCarRepository(database.parkedCarDao())
+    }
+
+    val returnRouteRepository: ReturnRouteRepository by lazy {
+        ReturnRouteRepository(RouteClient.create())
     }
 
     override fun onCreate() {
