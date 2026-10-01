@@ -37,17 +37,24 @@ terminar um estacionamento. Motivado pelo work-item `vp-10-history`.
 #### Step 1.1: Consulta paginada
 
 O histórico cresce indefinidamente; carregar tudo em memória não é aceitável. A listagem
-usa `PagingSource` do Room.
+lê apenas um bloco de cada vez.
+
+> Decisão de implementação: em vez do `PagingSource` do Room, a consulta recebe um
+> `LIMIT` reativo (`observeHistory(limit)`) que o ViewModel aumenta em páginas de 30.
+> Evita a dependência Paging 3 e é coerente com o resto do projeto, que também dispensa
+> a biblioteca de navegação.
 
 | Operação | Comportamento |
 |---|---|
-| `pagedHistory()` | Registos terminados, mais recentes primeiro |
-| `delete(id)` | Apaga o registo e a fotografia associada |
+| `observeHistory(limit)` | Registos terminados, mais recentes primeiro |
+| `observeCount()` | Total de registos, para saber se há mais páginas |
+| `delete(id)` | Apaga o registo e devolve-o para permitir anular |
 | `deleteAll()` | Apaga todos os registos terminados e respetivas fotografias |
-| `deleteOlderThan(millis)` | Retenção automática |
+| `applyRetention()` | Retenção automática |
 
 Apagar um registo tem de apagar também o ficheiro da fotografia no armazenamento privado,
-caso contrário a app acumula imagens órfãs.
+caso contrário a app acumula imagens órfãs. A fotografia só é removida quando a remoção
+deixa de ser anulável (`discardPhoto`), para que «Anular» possa repor o registo completo.
 
 #### Step 1.2: Retenção
 
@@ -61,13 +68,17 @@ caso contrário a app acumula imagens órfãs.
 |---|---|---|
 | Modify | `.../data/local/ParkedCarDao.kt` | Consulta paginada, apagar e retenção |
 | Create | `.../data/repository/ParkingHistoryRepository.kt` | Histórico, retenção e ficheiros |
-| Create | `.../data/local/HistorySettings.kt` | Preferência de retenção em DataStore |
+| Create | `.../data/local/HistorySettings.kt` | Preferência de retenção em `SharedPreferences` |
+| Create | `.../data/local/ParkedPhotoStore.kt` | Remoção dos ficheiros de fotografia |
+
+> Decisão de implementação: a preferência usa `SharedPreferences` exposto como `Flow`, em
+> vez de DataStore, para não acrescentar uma dependência por causa de um único valor.
 
 Verificação da fase 1:
 
-- [ ] Apagar um registo apaga a fotografia associada
-- [ ] O estacionamento ativo nunca aparece no histórico
-- [ ] A retenção não apaga o registo ativo
+- [x] Apagar um registo apaga a fotografia associada
+- [x] O estacionamento ativo nunca aparece no histórico
+- [x] A retenção não apaga o registo ativo
 
 ### Phase 2: UI do histórico
 
@@ -79,6 +90,8 @@ Verificação da fase 1:
 | Create | `.../ui/history/HistoryItemRow.kt` | Data, duração, nota e miniatura |
 | Create | `.../ui/history/HistoryDetailSheet.kt` | Mapa, fotografia e ações |
 | Modify | `.../ui/ParkingScreen.kt` | Entrada para o histórico |
+| Modify | `.../ui/ParkingRoute.kt` | Destino do histórico |
+| Modify | `.../VccParkingApplication.kt` | Criação do repositório do histórico |
 | Modify | `app/src/main/res/values/strings.xml` | Textos do histórico |
 
 A lista mostra a duração do estacionamento (`endedAtMillis - parkedAtMillis`), que é a
@@ -87,9 +100,9 @@ plana de centenas de linhas.
 
 Verificação da fase 2:
 
-- [ ] A lista vazia explica como criar o primeiro registo
-- [ ] Apagar pede confirmação e permite anular com `Snackbar`
-- [ ] O detalhe reutiliza o mapa de `vp-06-ui` sem duplicar código
+- [x] A lista vazia explica como criar o primeiro registo
+- [x] Apagar pede confirmação e permite anular com `Snackbar`
+- [x] O detalhe reutiliza o mapa de `vp-06-ui` sem duplicar código
 
 ### Phase 3: Exportação e privacidade
 
@@ -108,9 +121,9 @@ ficheiro é escrito no destino escolhido pelo utilizador.
 
 Verificação da fase 3:
 
-- [ ] O GeoJSON exportado abre num visualizador comum
-- [ ] «Apagar todo o histórico» exige confirmação explícita
-- [ ] A exportação não inclui dados que o utilizador já apagou
+- [x] O GeoJSON exportado abre num visualizador comum
+- [x] «Apagar todo o histórico» exige confirmação explícita
+- [x] A exportação não inclui dados que o utilizador já apagou
 
 ### Phase 4: Validação
 
@@ -119,6 +132,7 @@ Verificação da fase 3:
 | Create | `app/src/test/java/pt/vcc/parking/data/repository/ParkingHistoryRepositoryTest.kt` | Retenção e remoção de ficheiros |
 | Create | `app/src/test/java/pt/vcc/parking/history/HistoryExporterTest.kt` | Formato GeoJSON e CSV |
 | Create | `app/src/test/java/pt/vcc/parking/history/HistoryViewModelTest.kt` | Estados e ações |
+| Modify | `app/src/test/java/pt/vcc/parking/data/local/FakeParkedCarDao.kt` | Fake partilhado do DAO |
 | Run | `gradlew.bat :app:testDebugUnitTest` | Testes unitários |
 | Run | `gradlew.bat :app:assembleDebug` | Compilação |
 
@@ -137,6 +151,7 @@ Verificação da fase 3:
 |------|--------|---------|
 | `app/src/main/java/pt/vcc/parking/data/local/ParkedCarDao.kt` | Modify | Consultas do histórico e retenção |
 | `app/src/main/java/pt/vcc/parking/data/local/HistorySettings.kt` | Create | Preferência de retenção |
+| `app/src/main/java/pt/vcc/parking/data/local/ParkedPhotoStore.kt` | Create | Ficheiros das fotografias |
 | `app/src/main/java/pt/vcc/parking/data/repository/ParkingHistoryRepository.kt` | Create | Histórico, retenção e ficheiros |
 | `app/src/main/java/pt/vcc/parking/history/HistoryViewModel.kt` | Create | Estado do histórico |
 | `app/src/main/java/pt/vcc/parking/history/HistoryUiState.kt` | Create | Estados da UI |
@@ -146,7 +161,10 @@ Verificação da fase 3:
 | `app/src/main/java/pt/vcc/parking/ui/history/HistoryDetailSheet.kt` | Create | Detalhe de um registo |
 | `app/src/main/java/pt/vcc/parking/ui/history/HistoryPrivacySection.kt` | Create | Retenção e remoção total |
 | `app/src/main/java/pt/vcc/parking/ui/ParkingScreen.kt` | Modify | Entrada para o histórico |
+| `app/src/main/java/pt/vcc/parking/ui/ParkingRoute.kt` | Modify | Destino do histórico |
+| `app/src/main/java/pt/vcc/parking/VccParkingApplication.kt` | Modify | Criação do repositório |
 | `app/src/main/res/values/strings.xml` | Modify | Textos do histórico |
+| `app/src/test/java/pt/vcc/parking/data/local/FakeParkedCarDao.kt` | Modify | Fake partilhado do DAO |
 | `app/src/test/java/pt/vcc/parking/data/repository/ParkingHistoryRepositoryTest.kt` | Create | Testes do repositório |
 | `app/src/test/java/pt/vcc/parking/history/HistoryExporterTest.kt` | Create | Testes da exportação |
 | `app/src/test/java/pt/vcc/parking/history/HistoryViewModelTest.kt` | Create | Testes do ViewModel |

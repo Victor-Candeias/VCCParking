@@ -1,9 +1,6 @@
 package pt.vcc.parking.data.repository
 
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -11,8 +8,7 @@ import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import pt.vcc.parking.data.local.ParkedCarDao
-import pt.vcc.parking.data.local.ParkedCarEntity
+import pt.vcc.parking.data.local.FakeParkedCarDao
 import pt.vcc.parking.domain.model.Parking
 
 class ParkedCarRepositoryTest {
@@ -129,57 +125,6 @@ class ParkedCarRepositoryTest {
 
     private class MutableClock(var millis: Long) : () -> Long {
         override fun invoke(): Long = millis
-    }
-
-    /**
-     * Herda [ParkedCarDao.park] de proposito: a transacao que termina o anterior
-     * antes de inserir o novo e codigo de producao e e o que estes testes cobrem.
-     */
-    private class FakeParkedCarDao : ParkedCarDao() {
-
-        private val rows = MutableStateFlow<List<ParkedCarEntity>>(emptyList())
-        private var nextId = 1L
-
-        override suspend fun insert(parkedCar: ParkedCarEntity): Long {
-            val id = nextId++
-            rows.value = rows.value + parkedCar.copy(id = id)
-            return id
-        }
-
-        override fun observeActive(): Flow<ParkedCarEntity?> = rows.map { it.activeRecord() }
-
-        override suspend fun active(): ParkedCarEntity? = rows.value.activeRecord()
-
-        override suspend fun byId(id: Long): ParkedCarEntity? =
-            rows.value.firstOrNull { it.id == id }
-
-        override fun observeAll(): Flow<List<ParkedCarEntity>> =
-            rows.map { list -> list.sortedByDescending { it.parkedAtMillis } }
-
-        override suspend fun endActive(endedAtMillis: Long): Int {
-            val affected = rows.value.count { it.endedAtMillis == null }
-            rows.value = rows.value.map { row ->
-                if (row.endedAtMillis == null) row.copy(endedAtMillis = endedAtMillis) else row
-            }
-            return affected
-        }
-
-        override suspend fun updateDetails(id: Long, note: String?, photoUri: String?): Int =
-            update(id) { it.copy(note = note, photoUri = photoUri) }
-
-        override suspend fun updatePosition(id: Long, latitude: Double, longitude: Double): Int =
-            update(id) {
-                it.copy(latitude = latitude, longitude = longitude, accuracyMeters = null)
-            }
-
-        private fun update(id: Long, change: (ParkedCarEntity) -> ParkedCarEntity): Int {
-            val affected = rows.value.count { it.id == id }
-            rows.value = rows.value.map { if (it.id == id) change(it) else it }
-            return affected
-        }
-
-        private fun List<ParkedCarEntity>.activeRecord(): ParkedCarEntity? =
-            filter { it.endedAtMillis == null }.maxByOrNull { it.parkedAtMillis }
     }
 
     private companion object {

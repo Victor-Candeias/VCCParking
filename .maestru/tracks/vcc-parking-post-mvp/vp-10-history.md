@@ -6,7 +6,8 @@ title: Histórico de estacionamentos
 created: 2026-10-01
 owner: developer
 priority: medium
-status: backlog
+status: done
+completed: 2026-10-01
 track: vcc-parking-post-mvp
 blocked-by:
   - vp-08-park-save

@@ -3,10 +3,13 @@ package pt.vcc.parking
 import android.app.Application
 import org.osmdroid.config.Configuration
 import pt.vcc.parking.data.local.ParkingDatabase
+import pt.vcc.parking.data.local.PrivateParkedPhotoStore
 import pt.vcc.parking.data.local.RoomParkingCache
+import pt.vcc.parking.data.local.SharedPreferencesHistorySettings
 import pt.vcc.parking.data.remote.OverpassClient
 import pt.vcc.parking.data.remote.RouteClient
 import pt.vcc.parking.data.repository.ParkedCarRepository
+import pt.vcc.parking.data.repository.ParkingHistoryRepository
 import pt.vcc.parking.data.repository.ParkingRepository
 import pt.vcc.parking.data.repository.ReturnRouteRepository
 
@@ -23,6 +26,15 @@ class VccParkingApplication : Application() {
 
     val parkedCarRepository: ParkedCarRepository by lazy {
         ParkedCarRepository(database.parkedCarDao())
+    }
+
+    /** Historico de `vp-10-history`; partilha a tabela do estacionamento ativo. */
+    val parkingHistoryRepository: ParkingHistoryRepository by lazy {
+        ParkingHistoryRepository(
+            dao = database.parkedCarDao(),
+            settings = SharedPreferencesHistorySettings(this),
+            photos = PrivateParkedPhotoStore(this),
+        )
     }
 
     val returnRouteRepository: ReturnRouteRepository by lazy {

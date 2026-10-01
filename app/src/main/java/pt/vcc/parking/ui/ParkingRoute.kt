@@ -25,6 +25,7 @@ import pt.vcc.parking.location.LocationUiState
 import pt.vcc.parking.location.LocationViewModel
 import pt.vcc.parking.location.hasLocationPermission
 import pt.vcc.parking.parked.ParkedCarViewModel
+import pt.vcc.parking.ui.history.HistoryRoute
 import pt.vcc.parking.ui.returnroute.ReturnRouteScreen
 
 /**
@@ -59,10 +60,10 @@ fun ParkingRoute(
         }
     }
 
-    // A app tem dois ecras e nenhuma biblioteca de navegacao: um unico sinal
+    // A app tem tres ecras e nenhuma biblioteca de navegacao: um unico sinal
     // chega e sobrevive a rotacao. Trazer uma dependencia de navegacao para
     // isto custaria mais do que resolve.
-    var returningToCar by rememberSaveable { mutableStateOf(false) }
+    var screen by rememberSaveable { mutableStateOf(ParkingScreenRoute.Map) }
 
     LaunchedEffect(Unit) {
         if (context.hasLocationPermission()) {
@@ -77,14 +78,28 @@ fun ParkingRoute(
         parkingViewModel.onUserLocation(available.location)
     }
 
-    if (returningToCar) {
-        BackHandler { returningToCar = false }
+    when (screen) {
+        ParkingScreenRoute.Return -> {
+            BackHandler { screen = ParkingScreenRoute.Map }
 
-        ReturnRouteScreen(
-            modifier = modifier,
-            onBack = { returningToCar = false },
-        )
-        return
+            ReturnRouteScreen(
+                modifier = modifier,
+                onBack = { screen = ParkingScreenRoute.Map },
+            )
+            return
+        }
+
+        ParkingScreenRoute.History -> {
+            BackHandler { screen = ParkingScreenRoute.Map }
+
+            HistoryRoute(
+                modifier = modifier,
+                onBack = { screen = ParkingScreenRoute.Map },
+            )
+            return
+        }
+
+        ParkingScreenRoute.Map -> Unit
     }
 
     ParkingScreen(
@@ -102,12 +117,20 @@ fun ParkingRoute(
         onRetry = parkingViewModel::retry,
         onParkHere = parkedCarViewModel::parkHere,
         onParkAt = { latitude, longitude -> parkedCarViewModel.parkAt(latitude, longitude) },
-        onReturnToCar = { returningToCar = true },
+        onReturnToCar = { screen = ParkingScreenRoute.Return },
+        onOpenHistory = { screen = ParkingScreenRoute.History },
         onMoveParkedCar = parkedCarViewModel::moveTo,
         onUpdateParkedCarDetails = parkedCarViewModel::updateDetails,
         onEndParkedCar = parkedCarViewModel::endActive,
         onDismissParkedCarError = parkedCarViewModel::dismissCaptureError,
     )
+}
+
+/** Os tres destinos da app; guardado em `rememberSaveable`, sobrevive a rotacao. */
+private enum class ParkingScreenRoute {
+    Map,
+    Return,
+    History,
 }
 
 /**

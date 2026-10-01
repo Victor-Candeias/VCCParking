@@ -39,6 +39,53 @@ abstract class ParkedCarDao {
     @Query("SELECT * FROM ${ParkedCarEntity.TABLE} ORDER BY parkedAtMillis DESC")
     abstract fun observeAll(): Flow<List<ParkedCarEntity>>
 
+    /**
+     * Pagina do historico (`vp-10-history`).
+     *
+     * O [limit] cresce a medida que o utilizador pede mais registos: continua a
+     * ser uma unica consulta observada, pelo que apagar ou terminar um
+     * estacionamento atualiza a lista sem a reconstruir do inicio.
+     */
+    @Query(
+        "SELECT * FROM ${ParkedCarEntity.TABLE} " +
+            "WHERE endedAtMillis IS NOT NULL ORDER BY parkedAtMillis DESC LIMIT :limit",
+    )
+    abstract fun observeHistory(limit: Int): Flow<List<ParkedCarEntity>>
+
+    /** Permite saber se ainda ha registos para la da pagina atual. */
+    @Query("SELECT COUNT(*) FROM ${ParkedCarEntity.TABLE} WHERE endedAtMillis IS NOT NULL")
+    abstract fun observeHistoryCount(): Flow<Int>
+
+    /** Leitura completa; usada pela exportacao, que nao e paginada. */
+    @Query(
+        "SELECT * FROM ${ParkedCarEntity.TABLE} " +
+            "WHERE endedAtMillis IS NOT NULL ORDER BY parkedAtMillis DESC",
+    )
+    abstract suspend fun history(): List<ParkedCarEntity>
+
+    @Query(
+        "SELECT * FROM ${ParkedCarEntity.TABLE} " +
+            "WHERE endedAtMillis IS NOT NULL AND endedAtMillis < :millis",
+    )
+    abstract suspend fun historyEndedBefore(millis: Long): List<ParkedCarEntity>
+
+    /**
+     * O `endedAtMillis IS NOT NULL` nao e redundante: protege o estacionamento
+     * ativo de ser apagado por um id que chegue errado do ecra do historico.
+     */
+    @Query("DELETE FROM ${ParkedCarEntity.TABLE} WHERE id = :id AND endedAtMillis IS NOT NULL")
+    abstract suspend fun deleteHistoryEntry(id: Long): Int
+
+    @Query("DELETE FROM ${ParkedCarEntity.TABLE} WHERE endedAtMillis IS NOT NULL")
+    abstract suspend fun deleteHistory(): Int
+
+    /** Retencao automatica; o registo ativo nunca tem [millis] para comparar. */
+    @Query(
+        "DELETE FROM ${ParkedCarEntity.TABLE} " +
+            "WHERE endedAtMillis IS NOT NULL AND endedAtMillis < :millis",
+    )
+    abstract suspend fun deleteHistoryEndedBefore(millis: Long): Int
+
     /** Marca o fim sem apagar: o registo passa a pertencer ao historico. */
     @Query(
         "UPDATE ${ParkedCarEntity.TABLE} SET endedAtMillis = :endedAtMillis " +

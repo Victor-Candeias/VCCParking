@@ -75,6 +75,7 @@ fun ParkingScreen(
     onParkHere: (Parking?) -> Unit = {},
     onParkAt: (latitude: Double, longitude: Double) -> Unit = { _, _ -> },
     onReturnToCar: () -> Unit = {},
+    onOpenHistory: () -> Unit = {},
     onMoveParkedCar: (id: Long, latitude: Double, longitude: Double) -> Unit = { _, _, _ -> },
     onUpdateParkedCarDetails: (id: Long, note: String?, photoUri: String?) -> Unit =
         { _, _, _ -> },
@@ -88,7 +89,18 @@ fun ParkingScreen(
 
     Scaffold(
         modifier = modifier,
-        topBar = { TopAppBar(title = { Text(stringResource(R.string.app_name)) }) },
+        topBar = {
+            TopAppBar(
+                title = { Text(stringResource(R.string.app_name)) },
+                // O historico de `vp-10-history` nao tem ecra proprio na
+                // navegacao: e um destino secundario a partir do mapa.
+                actions = {
+                    TextButton(onClick = onOpenHistory) {
+                        Text(stringResource(R.string.history_action_open))
+                    }
+                },
+            )
+        },
         snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { innerPadding ->
         val content = Modifier

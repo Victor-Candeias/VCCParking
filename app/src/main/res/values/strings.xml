@@ -148,4 +148,57 @@
     <string name="return_no_compass">Este dispositivo não tem bússola, por isso não há seta. A distância continua a ser atualizada.</string>
     <string name="return_route_summary">A pé: %1$d m, cerca de %2$d min.</string>
     <string name="return_route_unavailable">Sem rota a pé neste momento. A seta e a distância continuam a funcionar.</string>
+
+    <!-- vp-10-history: histórico de estacionamentos -->
+    <string name="history_title">Histórico</string>
+    <string name="history_action_open">Histórico</string>
+    <string name="history_action_back">Voltar</string>
+    <string name="history_action_load_more">Mostrar mais</string>
+    <string name="history_action_delete">Apagar</string>
+    <string name="history_action_undo">Anular</string>
+    <string name="history_action_close">Fechar</string>
+    <string name="history_action_cancel">Cancelar</string>
+
+    <string name="history_empty_title">Ainda não há estacionamentos guardados</string>
+    <string name="history_empty_message">Quando guardar a posição do carro e depois tocar em «Já saí», o registo fica aqui.</string>
+    <string name="history_loading">A carregar o histórico…</string>
+    <string name="history_count">%1$d registos guardados</string>
+
+    <string name="history_day_today">Hoje</string>
+    <string name="history_day_yesterday">Ontem</string>
+
+    <string name="history_duration_minutes">%1$d min</string>
+    <string name="history_duration_hours">%1$d h %2$d min</string>
+    <string name="history_duration_days">%1$d d %2$d h</string>
+    <string name="history_entry_period">%1$s – %2$s</string>
+    <string name="history_entry_description">Estacionamento de %1$s</string>
+
+    <string name="history_detail_title">Detalhe do estacionamento</string>
+    <string name="history_detail_duration">Duração: %1$s</string>
+    <string name="history_detail_coordinates">%1$.5f, %2$.5f</string>
+    <string name="history_detail_map_description">Mapa com o local do estacionamento</string>
+
+    <string name="history_delete_confirm_title">Apagar este registo?</string>
+    <string name="history_delete_confirm_message">O registo e a fotografia associada são apagados do telemóvel.</string>
+    <string name="history_deleted">Registo apagado.</string>
+
+    <string name="history_privacy_title">Privacidade</string>
+    <string name="history_privacy_message">O histórico fica apenas neste telemóvel. Nada é enviado para fora.</string>
+    <string name="history_retention_title">Guardar durante</string>
+    <string name="history_retention_days_30">30 dias</string>
+    <string name="history_retention_days_90">90 dias</string>
+    <string name="history_retention_year">1 ano</string>
+    <string name="history_retention_forever">Sempre</string>
+
+    <string name="history_export_title">Exportar</string>
+    <string name="history_export_geojson">GeoJSON</string>
+    <string name="history_export_csv">CSV</string>
+    <string name="history_exporting">A exportar…</string>
+    <string name="history_exported">Histórico exportado.</string>
+    <string name="history_export_failed">Não foi possível exportar o histórico.</string>
+
+    <string name="history_clear_action">Apagar todo o histórico</string>
+    <string name="history_clear_confirm_title">Apagar todo o histórico?</string>
+    <string name="history_clear_confirm_message">Todos os registos terminados e respetivas fotografias são apagados. Esta ação não pode ser anulada. O estacionamento a decorrer não é afetado.</string>
+    <string name="history_cleared">%1$d registos apagados.</string>
 </resources>
