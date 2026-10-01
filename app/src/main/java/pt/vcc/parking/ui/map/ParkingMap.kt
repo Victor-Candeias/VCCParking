@@ -10,6 +10,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import org.osmdroid.events.MapListener
@@ -82,7 +83,9 @@ fun ParkingMap(
     }
 
     AndroidView(
-        modifier = modifier,
+        // O MapView desenha os tiles para la da area medida e tapava o conteudo
+        // seguinte; o recorte mantem o mapa dentro do espaco que lhe foi dado.
+        modifier = modifier.clipToBounds(),
         factory = { mapView },
         update = { map ->
             map.overlays.clear()

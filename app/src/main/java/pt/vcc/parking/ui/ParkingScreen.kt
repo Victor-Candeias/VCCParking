@@ -1,5 +1,6 @@
 package pt.vcc.parking.ui
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -33,11 +34,13 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.launch
 import pt.vcc.parking.R
@@ -184,7 +187,8 @@ private fun ParkingContent(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .weight(MAP_WEIGHT),
+                .weight(MAP_WEIGHT)
+                .clipToBounds(),
         ) {
             ParkingMap(
                 userLocation = userLocation,
@@ -251,6 +255,11 @@ private fun ParkingContent(
         ResultsHeader(
             parkingState = parkingState,
             radiusMeters = radiusMeters,
+            // Desenhado depois do mapa e com fundo opaco: o texto de estado
+            // nunca fica por baixo dos tiles.
+            modifier = Modifier
+                .zIndex(1f)
+                .background(MaterialTheme.colorScheme.surface),
             onRadiusSelected = onRadiusSelected,
             onRetry = onRetry,
         )
