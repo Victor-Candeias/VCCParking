@@ -15,10 +15,13 @@ import androidx.sqlite.db.SupportSQLiteDatabase
  * Por isso a atualizacao de versao deixou de ser destrutiva e passou a ter
  * [MIGRATION_1_2] explicita. A destruicao so se mantem na descida de versao,
  * onde nao ha migracao possivel.
+ *
+ * A versao 3 acrescenta `parking_reminder` (`vp-11-reminders`) com a mesma
+ * regra: migracao explicita, sem apagar nada.
  */
 @Database(
-    entities = [ParkingEntity::class, ParkedCarEntity::class],
-    version = 2,
+    entities = [ParkingEntity::class, ParkedCarEntity::class, ParkingReminderEntity::class],
+    version = 3,
     exportSchema = true,
 )
 abstract class ParkingDatabase : RoomDatabase() {
@@ -26,6 +29,8 @@ abstract class ParkingDatabase : RoomDatabase() {
     abstract fun parkingDao(): ParkingDao
 
     abstract fun parkedCarDao(): ParkedCarDao
+
+    abstract fun parkingReminderDao(): ParkingReminderDao
 
     companion object {
         const val NAME = "vcc-parking.db"
@@ -60,6 +65,27 @@ abstract class ParkingDatabase : RoomDatabase() {
             }
         }
 
+        /**
+         * Acrescenta `parking_reminder` para `vp-11-reminders`.
+         *
+         * O DDL replica exatamente o que o Room gera para
+         * [ParkingReminderEntity] — incluindo o `INTEGER NOT NULL` do booleano
+         * `dismissed` — porque a estrutura real e validada na abertura.
+         */
+        val MIGRATION_2_3: Migration = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `${ParkingReminderEntity.TABLE}` (" +
+                        "`parkedCarId` INTEGER NOT NULL, " +
+                        "`expiresAtMillis` INTEGER, " +
+                        "`warnBeforeMillis` INTEGER NOT NULL, " +
+                        "`recurringEveryMillis` INTEGER, " +
+                        "`dismissed` INTEGER NOT NULL, " +
+                        "PRIMARY KEY(`parkedCarId`))",
+                )
+            }
+        }
+
         @Volatile
         private var instance: ParkingDatabase? = null
 
@@ -74,7 +100,7 @@ abstract class ParkingDatabase : RoomDatabase() {
                 ParkingDatabase::class.java,
                 NAME,
             )
-                .addMigrations(MIGRATION_1_2)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
                 .fallbackToDestructiveMigrationOnDowngrade(dropAllTables = true)
                 .build()
     }

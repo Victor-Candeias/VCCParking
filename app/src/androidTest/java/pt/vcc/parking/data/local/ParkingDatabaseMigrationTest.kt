@@ -10,10 +10,10 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 /**
- * Rede de seguranca da `vp-08-park-save`: a tabela `parked_car` guarda dados do
- * utilizador, por isso a subida de versao deixou de poder apagar a base de
- * dados. Este teste corre [ParkingDatabase.MIGRATION_1_2] sobre um ficheiro v1
- * real e confirma que nada se perde pelo caminho.
+ * Rede de seguranca das migracoes com dados do utilizador: tanto a `parked_car`
+ * de `vp-08-park-save` como a `parking_reminder` de `vp-11-reminders` guardam
+ * informacao que nao pode ser apagada numa subida de versao. Cada teste corre a
+ * migracao sobre um ficheiro real da versao anterior.
  */
 @RunWith(AndroidJUnit4::class)
 class ParkingDatabaseMigrationTest {
@@ -59,6 +59,43 @@ class ParkingDatabaseMigrationTest {
         }
 
         v2.close()
+    }
+
+    /**
+     * `vp-11-reminders` acrescentou a tabela dos lembretes. O estacionamento
+     * guardado na v2 tem de continuar la: perder o carro para ganhar um prazo
+     * seria um mau negocio.
+     */
+    @Test
+    fun migratingFromTwoToThreeKeepsParkedCarsAndCreatesReminders() {
+        helper.createDatabase(DB_NAME, 2).use { v2 ->
+            v2.execSQL(
+                "INSERT INTO `${ParkedCarEntity.TABLE}` (" +
+                    "`latitude`, `longitude`, `accuracyMeters`, `parkedAtMillis`, " +
+                    "`endedAtMillis`, `note`, `photoUri`, `osmType`, `osmId`" +
+                    ") VALUES (38.7, -9.1, 5.0, 1000, NULL, 'Piso -2', NULL, NULL, NULL)",
+            )
+        }
+
+        val v3 = helper.runMigrationsAndValidate(
+            DB_NAME,
+            3,
+            true,
+            ParkingDatabase.MIGRATION_2_3,
+        )
+
+        v3.query("SELECT `id`, `note` FROM `${ParkedCarEntity.TABLE}`").use { cursor ->
+            assertTrue("O estacionamento devia sobreviver a migracao", cursor.moveToFirst())
+            assertEquals(1, cursor.count)
+            assertEquals("Piso -2", cursor.getString(1))
+        }
+
+        v3.query("SELECT COUNT(*) FROM `${ParkingReminderEntity.TABLE}`").use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertEquals(0, cursor.getInt(0))
+        }
+
+        v3.close()
     }
 
     private companion object {

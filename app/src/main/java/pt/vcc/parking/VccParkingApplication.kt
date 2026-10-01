@@ -1,6 +1,9 @@
 package pt.vcc.parking
 
 import android.app.Application
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import org.osmdroid.config.Configuration
 import pt.vcc.parking.data.local.ParkingDatabase
 import pt.vcc.parking.data.local.PrivateParkedPhotoStore
@@ -11,9 +14,21 @@ import pt.vcc.parking.data.remote.RouteClient
 import pt.vcc.parking.data.repository.ParkedCarRepository
 import pt.vcc.parking.data.repository.ParkingHistoryRepository
 import pt.vcc.parking.data.repository.ParkingRepository
+import pt.vcc.parking.data.repository.ReminderRepository
 import pt.vcc.parking.data.repository.ReturnRouteRepository
+import pt.vcc.parking.reminder.AlarmReminderScheduler
+import pt.vcc.parking.reminder.ReminderCoordinator
+import pt.vcc.parking.reminder.ReminderNotifications
+import pt.vcc.parking.reminder.ReminderScheduler
 
 class VccParkingApplication : Application() {
+
+    /**
+     * Trabalho que nao pertence a nenhum ecra: os recetores de `vp-11-reminders`
+     * correm fora de qualquer `ViewModel` e precisam de um `scope` que viva o
+     * tempo do processo.
+     */
+    val applicationScope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     val database: ParkingDatabase by lazy { ParkingDatabase.getInstance(this) }
 
@@ -41,9 +56,32 @@ class VccParkingApplication : Application() {
         ReturnRouteRepository(RouteClient.create())
     }
 
+    /** Lembretes de `vp-11-reminders`; partilham a base de dados do estacionamento. */
+    val reminderRepository: ReminderRepository by lazy {
+        ReminderRepository(
+            reminders = database.parkingReminderDao(),
+            parkedCars = database.parkedCarDao(),
+        )
+    }
+
+    val reminderScheduler: ReminderScheduler by lazy { AlarmReminderScheduler(this) }
+
+    val reminderNotifications: ReminderNotifications by lazy { ReminderNotifications(this) }
+
+    private val reminderCoordinator: ReminderCoordinator by lazy {
+        ReminderCoordinator(
+            parkedCars = parkedCarRepository,
+            reminders = reminderRepository,
+            scheduler = reminderScheduler,
+            notifications = reminderNotifications,
+        )
+    }
+
     override fun onCreate() {
         super.onCreate()
         configureOsmdroid()
+        ReminderNotifications.createChannels(this)
+        reminderCoordinator.start(applicationScope)
     }
 
     /**

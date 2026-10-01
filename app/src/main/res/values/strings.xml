@@ -201,4 +201,54 @@
     <string name="history_clear_confirm_title">Apagar todo o histórico?</string>
     <string name="history_clear_confirm_message">Todos os registos terminados e respetivas fotografias são apagados. Esta ação não pode ser anulada. O estacionamento a decorrer não é afetado.</string>
     <string name="history_cleared">%1$d registos apagados.</string>
+
+    <!-- vp-11-reminders: lembretes e notificações de estacionamento -->
+    <string name="reminder_channel_active">Estacionamento a decorrer</string>
+    <string name="reminder_channel_active_description">Notificação permanente com o tempo decorrido e atalhos para voltar ao carro.</string>
+    <string name="reminder_channel_deadline">Fim do tempo de estacionamento</string>
+    <string name="reminder_channel_deadline_description">Aviso antecipado e aviso de fim do prazo pago.</string>
+
+    <string name="reminder_ongoing_title">O seu carro está estacionado</string>
+    <string name="reminder_ongoing_no_deadline">Sem prazo definido. Toque para definir um lembrete.</string>
+    <string name="reminder_ongoing_remaining">Faltam %1$s para o fim do prazo.</string>
+    <string name="reminder_ongoing_expired">O prazo já terminou.</string>
+
+    <string name="reminder_warning_title">O tempo está a acabar</string>
+    <string name="reminder_warning_message">Faltam %1$s para o fim do prazo de estacionamento.</string>
+    <string name="reminder_expired_title">O tempo terminou</string>
+    <string name="reminder_expired_message">O prazo de estacionamento chegou ao fim.</string>
+    <string name="reminder_still_parked_title">O carro continua estacionado</string>
+    <string name="reminder_still_parked_message">Toque para voltar ao carro ou para terminar o estacionamento.</string>
+
+    <string name="reminder_action_extend">Mais %1$d min</string>
+    <string name="reminder_action_set">Definir lembrete</string>
+    <string name="reminder_action_change">Alterar lembrete</string>
+    <string name="reminder_action_save">Guardar lembrete</string>
+    <string name="reminder_action_remove">Remover lembrete</string>
+
+    <string name="reminder_duration_minutes">%1$d min</string>
+    <string name="reminder_duration_hours">%1$d h</string>
+    <string name="reminder_duration_hours_minutes">%1$d h %2$d min</string>
+
+    <string name="reminder_sheet_title">Lembrete de estacionamento</string>
+    <string name="reminder_duration_label">Quanto tempo vai ficar</string>
+    <string name="reminder_duration_none">Sem prazo</string>
+    <string name="reminder_duration_custom">Personalizado</string>
+    <string name="reminder_custom_minutes_label">Minutos</string>
+
+    <string name="reminder_warn_before_label">Avisar com antecedência</string>
+    <string name="reminder_warn_before_option">%1$d min antes</string>
+    <string name="reminder_recurring_label">Lembrar que o carro está estacionado</string>
+    <string name="reminder_recurring_off">Desligado</string>
+    <string name="reminder_recurring_option">A cada %1$d h</string>
+
+    <string name="reminder_card_remaining">Faltam %1$s</string>
+    <string name="reminder_card_expired">O prazo terminou</string>
+    <string name="reminder_card_none">Sem lembrete definido</string>
+
+    <string name="reminder_permission_notifications">Sem permissão para notificações o lembrete não pode avisar.</string>
+    <string name="reminder_action_allow_notifications">Permitir notificações</string>
+    <string name="reminder_exact_alarm_warning">Os alarmes exatos estão desativados, por isso o aviso pode chegar com atraso.</string>
+    <string name="reminder_action_exact_alarm_settings">Abrir definições de alarmes</string>
+    <string name="reminder_disclaimer">O aviso é indicativo e depende do sistema. Não substitui a sua atenção ao parquímetro.</string>
 </resources>

@@ -50,6 +50,7 @@ import pt.vcc.parking.location.LocationUiState
 import pt.vcc.parking.location.UserLocation
 import pt.vcc.parking.parked.ParkedCarCaptureError
 import pt.vcc.parking.parked.ParkedCarUiState
+import pt.vcc.parking.reminder.ReminderUiState
 import pt.vcc.parking.ui.details.ParkingDetailsSheet
 import pt.vcc.parking.ui.details.openExternalNavigation
 import pt.vcc.parking.ui.list.ParkingList
@@ -58,6 +59,7 @@ import pt.vcc.parking.ui.parked.ParkHereButton
 import pt.vcc.parking.ui.parked.ParkedCarCard
 import pt.vcc.parking.ui.parked.ParkedCarEditSheet
 import pt.vcc.parking.ui.parked.ParkedCarPinPicker
+import pt.vcc.parking.ui.reminder.ReminderSheet
 
 /** Ecra principal da seccao 22 do documento do MVP. */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -68,6 +70,7 @@ fun ParkingScreen(
     radiusMeters: Int,
     modifier: Modifier = Modifier,
     parkedCarState: ParkedCarUiState = ParkedCarUiState.Empty,
+    reminderState: ReminderUiState = ReminderUiState(),
     onRequestPermission: () -> Unit = {},
     onRefreshLocation: () -> Unit = {},
     onOpenAppSettings: () -> Unit = {},
@@ -84,6 +87,14 @@ fun ParkingScreen(
         { _, _, _ -> },
     onEndParkedCar: () -> Unit = {},
     onDismissParkedCarError: () -> Unit = {},
+    onSaveReminder: (
+        durationMillis: Long?,
+        warnBeforeMillis: Long,
+        recurringEveryMillis: Long?,
+    ) -> Unit = { _, _, _ -> },
+    onExtendReminder: () -> Unit = {},
+    onRemoveReminder: () -> Unit = {},
+    onReminderCapabilitiesChanged: () -> Unit = {},
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -117,6 +128,7 @@ fun ParkingScreen(
                 radiusMeters = radiusMeters,
                 modifier = content,
                 parkedCarState = parkedCarState,
+                reminderState = reminderState,
                 onRadiusSelected = onRadiusSelected,
                 onSearchArea = onSearchArea,
                 onRetry = onRetry,
@@ -133,6 +145,10 @@ fun ParkingScreen(
                 onEndParkedCar = onEndParkedCar,
                 onDismissParkedCarError = onDismissParkedCarError,
                 onRequestPermission = onRequestPermission,
+                onSaveReminder = onSaveReminder,
+                onExtendReminder = onExtendReminder,
+                onRemoveReminder = onRemoveReminder,
+                onReminderCapabilitiesChanged = onReminderCapabilitiesChanged,
             )
         } else {
             LocationStatus(
@@ -154,6 +170,7 @@ private fun ParkingContent(
     radiusMeters: Int,
     modifier: Modifier = Modifier,
     parkedCarState: ParkedCarUiState = ParkedCarUiState.Empty,
+    reminderState: ReminderUiState = ReminderUiState(),
     onRadiusSelected: (Int) -> Unit = {},
     onSearchArea: (latitude: Double, longitude: Double) -> Unit = { _, _ -> },
     onRetry: () -> Unit = {},
@@ -167,6 +184,14 @@ private fun ParkingContent(
     onEndParkedCar: () -> Unit = {},
     onDismissParkedCarError: () -> Unit = {},
     onRequestPermission: () -> Unit = {},
+    onSaveReminder: (
+        durationMillis: Long?,
+        warnBeforeMillis: Long,
+        recurringEveryMillis: Long?,
+    ) -> Unit = { _, _, _ -> },
+    onExtendReminder: () -> Unit = {},
+    onRemoveReminder: () -> Unit = {},
+    onReminderCapabilitiesChanged: () -> Unit = {},
 ) {
     val parking = (parkingState as? ParkingUiState.Success)?.parking.orEmpty()
     val parkedCar = parkedCarState.parkedCar
@@ -177,6 +202,7 @@ private fun ParkingContent(
     val selectedParking = parking.firstOrNull { it.id == selectedParkingId }
 
     var editingParkedCar by rememberSaveable { mutableStateOf(false) }
+    var editingReminder by rememberSaveable { mutableStateOf(false) }
     var pinTarget by remember { mutableStateOf<PinTarget?>(null) }
 
     var mapCenter by remember {
@@ -239,6 +265,7 @@ private fun ParkingContent(
             ParkedCarCard(
                 parkedCar = parkedCar,
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                reminder = reminderState.reminder,
                 onReturnToCar = onReturnToCar,
                 onEdit = { editingParkedCar = true },
                 onAdjustOnMap = {
@@ -249,6 +276,13 @@ private fun ParkingContent(
                     )
                 },
                 onEnd = onEndParkedCar,
+                onSetReminder = {
+                    // As permissoes podem ter mudado nas definicoes do sistema
+                    // enquanto a app esteve de lado: reler antes de abrir.
+                    onReminderCapabilitiesChanged()
+                    editingReminder = true
+                },
+                onExtendReminder = onExtendReminder,
             )
         }
 
@@ -302,6 +336,21 @@ private fun ParkingContent(
         )
     }
 
+    if (editingReminder && parkedCar != null) {
+        ReminderSheet(
+            state = reminderState,
+            onDismiss = { editingReminder = false },
+            onSave = { durationMillis, warnBeforeMillis, recurringEveryMillis ->
+                editingReminder = false
+                onSaveReminder(durationMillis, warnBeforeMillis, recurringEveryMillis)
+            },
+            onRemove = {
+                editingReminder = false
+                onRemoveReminder()
+            },
+            onCapabilitiesChanged = onReminderCapabilitiesChanged,
+        )
+    }
     pinTarget?.let { target ->
         ParkedCarPinPicker(
             initialLatitude = target.latitude,

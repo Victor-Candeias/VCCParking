@@ -6,6 +6,15 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
+    <!-- vp-11-reminders: avisos de fim de prazo de estacionamento.
+         SCHEDULE_EXACT_ALARM e pedido ao utilizador no Android 12+; quando nao
+         e concedido a app degrada para alarme inexato em vez de falhar.
+         USE_EXACT_ALARM nao e pedido de proposito: a Play Store so o aceita em
+         apps de alarme/calendario e esta nao e nenhuma das duas. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
     <!-- Seccao 25: visibilidade do pacote necessaria para resolver o esquema geo:.
          O google.navigation: e o unico que aceita modo a pe (vp-09-return-route);
          sem esta entrada a resolucao falharia sempre e a app cairia no geo:. -->
@@ -32,12 +41,35 @@
             android:name=".MainActivity"
             android:exported="true"
             android:label="@string/app_name"
+            android:launchMode="singleTop"
             android:theme="@style/Theme.VCCParking">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- vp-11-reminders: nenhum destes recetores e exportado. Os alarmes e
+             as accoes das notificacoes sao disparados pela propria app, e deixar
+             qualquer outra app terminar o estacionamento seria um erro. -->
+        <receiver
+            android:name=".reminder.ReminderReceiver"
+            android:exported="false" />
+
+        <receiver
+            android:name=".reminder.ReminderActionReceiver"
+            android:exported="false" />
+
+        <!-- A excecao: o BOOT_COMPLETED vem do sistema, por isso tem de aceitar
+             um emissor externo, mas so para essa accao. -->
+        <receiver
+            android:name=".reminder.BootCompletedReceiver"
+            android:exported="true"
+            android:permission="android.permission.RECEIVE_BOOT_COMPLETED">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

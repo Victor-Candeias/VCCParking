@@ -144,6 +144,17 @@ Verificação da fase 3:
 | Excesso de notificações | Utilizador desativa o canal | Lembrete periódico desligado por omissão |
 | Expectativa errada | O utilizador confia no aviso e leva multa | Texto claro de que o aviso é indicativo |
 
+## Desvios da implementação
+
+Decisões tomadas durante a implementação que divergem do que está planeado acima.
+
+| Planeado | Implementado | Porquê |
+|---|---|---|
+| Degradação para `WorkManager` quando o alarme exato é negado | `AlarmManager.setAndAllowWhileIdle` (inexato) | O fallback inexato dá a mesma garantia prática de entrega sem acrescentar uma dependência nova ao projeto |
+| Lembrete «ainda estacionado» pelo `WorkManager` | Alarme reagendado um de cada vez pelo `ReminderReceiver` | Um periódico que sobrevivesse ao fim do estacionamento era o risco maior; reagendar a cada disparo garante que o ciclo morre com o registo |
+| Escolha do prazo no momento de estacionar | Ação «Definir lembrete» no cartão do carro | Um popup a seguir a guardar o carro atrasa a ação principal; quem não quer prazo não paga nada por isso |
+| `ReminderCoordinator.kt` não previsto | Criado | A notificação persistente e os alarmes têm de seguir o estado da base de dados a partir de fora da UI, que pode nem estar aberta |
+
 ## Impacted Files
 
 | File | Action | Purpose |

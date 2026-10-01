@@ -25,6 +25,7 @@ import pt.vcc.parking.location.LocationUiState
 import pt.vcc.parking.location.LocationViewModel
 import pt.vcc.parking.location.hasLocationPermission
 import pt.vcc.parking.parked.ParkedCarViewModel
+import pt.vcc.parking.reminder.ReminderViewModel
 import pt.vcc.parking.ui.history.HistoryRoute
 import pt.vcc.parking.ui.returnroute.ReturnRouteScreen
 
@@ -38,9 +39,12 @@ import pt.vcc.parking.ui.returnroute.ReturnRouteScreen
 @Composable
 fun ParkingRoute(
     modifier: Modifier = Modifier,
+    openReturn: Boolean = false,
+    onReturnOpened: () -> Unit = {},
     locationViewModel: LocationViewModel = viewModel(factory = LocationViewModel.Factory),
     parkingViewModel: ParkingViewModel = viewModel(factory = ParkingViewModel.Factory),
     parkedCarViewModel: ParkedCarViewModel = viewModel(factory = ParkedCarViewModel.Factory),
+    reminderViewModel: ReminderViewModel = viewModel(factory = ReminderViewModel.Factory),
 ) {
     val context = LocalContext.current
     val activity = LocalActivity.current
@@ -49,6 +53,7 @@ fun ParkingRoute(
     val parkingState by parkingViewModel.uiState.collectAsStateWithLifecycle()
     val radiusMeters by parkingViewModel.radiusMeters.collectAsStateWithLifecycle()
     val parkedCarState by parkedCarViewModel.uiState.collectAsStateWithLifecycle()
+    val reminderState by reminderViewModel.uiState.collectAsStateWithLifecycle()
 
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions(),
@@ -76,6 +81,15 @@ fun ParkingRoute(
     LaunchedEffect(locationState) {
         val available = locationState as? LocationUiState.Available ?: return@LaunchedEffect
         parkingViewModel.onUserLocation(available.location)
+    }
+
+    // Toque na notificacao persistente de `vp-11-reminders`: a Activity e
+    // `singleTop`, por isso o pedido chega como estado e nao como novo arranque.
+    LaunchedEffect(openReturn) {
+        if (openReturn) {
+            screen = ParkingScreenRoute.Return
+            onReturnOpened()
+        }
     }
 
     when (screen) {
@@ -108,6 +122,7 @@ fun ParkingRoute(
         radiusMeters = radiusMeters,
         modifier = modifier,
         parkedCarState = parkedCarState,
+        reminderState = reminderState,
         onRequestPermission = { permissionLauncher.launch(LOCATION_PERMISSIONS) },
         onRefreshLocation = locationViewModel::refreshLocation,
         onOpenAppSettings = context::openAppSettings,
@@ -123,6 +138,10 @@ fun ParkingRoute(
         onUpdateParkedCarDetails = parkedCarViewModel::updateDetails,
         onEndParkedCar = parkedCarViewModel::endActive,
         onDismissParkedCarError = parkedCarViewModel::dismissCaptureError,
+        onSaveReminder = reminderViewModel::setReminder,
+        onExtendReminder = reminderViewModel::extend,
+        onRemoveReminder = reminderViewModel::clear,
+        onReminderCapabilitiesChanged = reminderViewModel::refreshCapabilities,
     )
 }
 

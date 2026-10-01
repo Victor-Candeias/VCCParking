@@ -44,6 +44,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import pt.vcc.parking.R
 import pt.vcc.parking.domain.model.ParkedCar
+import pt.vcc.parking.domain.model.ParkingReminder
 import pt.vcc.parking.ui.theme.VccParkingTheme
 
 /**
@@ -57,10 +58,13 @@ import pt.vcc.parking.ui.theme.VccParkingTheme
 fun ParkedCarCard(
     parkedCar: ParkedCar,
     modifier: Modifier = Modifier,
+    reminder: ParkingReminder? = null,
     onReturnToCar: () -> Unit = {},
     onEdit: () -> Unit = {},
     onAdjustOnMap: () -> Unit = {},
     onEnd: () -> Unit = {},
+    onSetReminder: () -> Unit = {},
+    onExtendReminder: () -> Unit = {},
 ) {
     var confirmingEnd by remember { mutableStateOf(false) }
     val nowMillis = rememberNowMillis()
@@ -82,6 +86,10 @@ fun ParkedCarCard(
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+
+            // O prazo e a informacao mais urgente do cartao quando existe, por
+            // isso vem logo a seguir ao tempo decorrido e nao no fim.
+            ReminderStatus(reminder = reminder, nowMillis = nowMillis)
 
             if (!parkedCar.isAccurate) {
                 Text(
@@ -115,6 +123,39 @@ fun ParkedCarCard(
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 Text(stringResource(R.string.return_action_guide_me))
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                TextButton(onClick = onSetReminder) {
+                    Text(
+                        stringResource(
+                            if (reminder?.hasDeadline == true) {
+                                R.string.reminder_action_change
+                            } else {
+                                R.string.reminder_action_set
+                            },
+                        ),
+                    )
+                }
+
+                // Prolongar so faz sentido com prazo definido; sem prazo nao ha
+                // nada a que acrescentar meia hora.
+                if (reminder?.hasDeadline == true) {
+                    TextButton(onClick = onExtendReminder) {
+                        Text(
+                            stringResource(
+                                R.string.reminder_action_extend,
+                                TimeUnit.MILLISECONDS
+                                    .toMinutes(ParkingReminder.EXTENSION_MILLIS)
+                                    .toInt(),
+                            ),
+                        )
+                    }
+                }
             }
 
             Row(
@@ -156,6 +197,59 @@ fun ParkedCarCard(
                     Text(stringResource(R.string.parked_action_cancel))
                 }
             },
+        )
+    }
+}
+
+/**
+ * Estado do lembrete dentro do cartao (`vp-11-reminders`).
+ *
+ * Um prazo ultrapassado e assinalado a cor de erro: e precisamente o momento em
+ * que a app tem de ser impossivel de ignorar.
+ */
+@Composable
+private fun ReminderStatus(
+    reminder: ParkingReminder?,
+    nowMillis: Long,
+    modifier: Modifier = Modifier,
+) {
+    val remaining = reminder?.remainingMillis(nowMillis)
+
+    val (text, color) = when {
+        remaining == null -> stringResource(R.string.reminder_card_none) to
+            MaterialTheme.colorScheme.onSurfaceVariant
+
+        remaining <= 0L -> stringResource(R.string.reminder_card_expired) to
+            MaterialTheme.colorScheme.error
+
+        else -> stringResource(R.string.reminder_card_remaining, remainingLabel(remaining)) to
+            MaterialTheme.colorScheme.onSurfaceVariant
+    }
+
+    Text(
+        text = text,
+        modifier = modifier,
+        style = MaterialTheme.typography.bodyMedium,
+        color = color,
+    )
+}
+
+/** Mesma escala das notificacoes, para o cartao e a barra dizerem o mesmo. */
+@Composable
+private fun remainingLabel(millis: Long): String {
+    val minutes = TimeUnit.MILLISECONDS.toMinutes(millis.coerceAtLeast(0L))
+    val hours = minutes / MINUTES_PER_HOUR
+    val rest = minutes % MINUTES_PER_HOUR
+
+    return when {
+        minutes < MINUTES_PER_HOUR ->
+            stringResource(R.string.reminder_duration_minutes, minutes.toInt())
+
+        rest == 0L -> stringResource(R.string.reminder_duration_hours, hours.toInt())
+        else -> stringResource(
+            R.string.reminder_duration_hours_minutes,
+            hours.toInt(),
+            rest.toInt(),
         )
     }
 }
@@ -246,6 +340,7 @@ private fun Context.decodeScaled(uri: Uri, maxWidthPixels: Int = MAX_PHOTO_WIDTH
 
 private const val TICK_PERIOD_MILLIS = 60_000L
 private const val MAX_PHOTO_WIDTH_PIXELS = 1_080
+private const val MINUTES_PER_HOUR = 60L
 private val PHOTO_HEIGHT = 160.dp
 
 @Preview(showBackground = true)
