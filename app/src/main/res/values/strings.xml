@@ -51,7 +51,6 @@
     <string name="parking_label_type">Tipo</string>
     <string name="parking_label_operator">Operador</string>
     <string name="parking_label_access">Acesso</string>
-    <string name="parking_label_fee">Pago/Grátis</string>
     <string name="parking_label_opening_hours">Horário</string>
     <string name="parking_label_disabled_capacity">Lugares PMR</string>
     <string name="parking_label_zone">Zona</string>
@@ -251,4 +250,68 @@
     <string name="reminder_exact_alarm_warning">Os alarmes exatos estão desativados, por isso o aviso pode chegar com atraso.</string>
     <string name="reminder_action_exact_alarm_settings">Abrir definições de alarmes</string>
     <string name="reminder_disclaimer">O aviso é indicativo e depende do sistema. Não substitui a sua atenção ao parquímetro.</string>
+
+    <!-- vp-12-rich-details: informação detalhada dos parques e filtros -->
+    <string name="parking_open_always">Aberto 24 horas</string>
+    <string name="parking_open_now">Aberto</string>
+    <string name="parking_open_until">Aberto até às %1$s</string>
+    <string name="parking_closed_now">Fechado</string>
+    <string name="parking_closed_until">Fechado, abre às %1$s</string>
+    <string name="parking_fee_unknown_amount">Pago (valor por indicar)</string>
+    <string name="parking_charge_per_unit">%1$s por %2$s</string>
+    <string name="parking_charge_unit_hour">hora</string>
+    <string name="parking_charge_unit_day">dia</string>
+    <string name="parking_charge_unit_month">mês</string>
+    <string name="parking_max_height">%1$.2f m</string>
+    <string name="parking_covered_yes">Coberto</string>
+    <string name="parking_covered_no">Ao ar livre</string>
+    <string name="parking_supervised_yes">Com vigilância</string>
+    <string name="parking_supervised_no">Sem vigilância</string>
+    <string name="parking_payment_cash">Dinheiro</string>
+    <string name="parking_payment_card">Cartão</string>
+    <string name="parking_payment_contactless">Contactless</string>
+    <string name="parking_payment_app">Aplicação</string>
+
+    <string name="parking_label_charge">Preço</string>
+    <string name="parking_label_opening_state">Estado</string>
+    <string name="parking_label_max_height">Altura máxima</string>
+    <string name="parking_label_max_stay">Tempo máximo</string>
+    <string name="parking_label_condition">Condições</string>
+    <string name="parking_label_covered">Cobertura</string>
+    <string name="parking_label_supervised">Vigilância</string>
+    <string name="parking_label_payment">Pagamento</string>
+    <string name="parking_label_charging_capacity">Lugares com carregamento</string>
+    <string name="parking_label_parent_capacity">Lugares para famílias</string>
+
+    <string name="parking_section_prices">Preços e horário</string>
+    <string name="parking_section_restrictions">Restrições</string>
+    <string name="parking_section_facilities">Instalações</string>
+    <string name="parking_section_contacts">Contactos</string>
+
+    <string name="parking_contribute_title">Falta informação?</string>
+    <string name="parking_contribute_body">Os dados vêm do OpenStreetMap. Qualquer pessoa pode completá-los.</string>
+    <string name="parking_contribute_action">Melhorar no OpenStreetMap</string>
+
+    <string name="parking_filter_action">Filtros</string>
+    <string name="parking_filter_title">Filtrar parques</string>
+    <string name="parking_filter_free">Apenas gratuitos</string>
+    <string name="parking_filter_open_now">Abertos agora</string>
+    <string name="parking_filter_covered">Cobertos</string>
+    <string name="parking_filter_disabled">Com lugares para mobilidade reduzida</string>
+    <string name="parking_filter_charging">Com carregamento elétrico</string>
+    <string name="parking_filter_height">Altura do veículo</string>
+    <string name="parking_filter_height_hint">Metros (ex.: 1,85)</string>
+    <string name="parking_filter_clear">Limpar filtros</string>
+    <string name="parking_filter_close">Fechar</string>
+    <string name="parking_filter_active_count">%1$d filtro(s) ativo(s)</string>
+    <string name="parking_filter_unknown_header">Sem informação suficiente (%1$d)</string>
+    <string name="parking_filter_unknown_explanation">Estes parques não têm no OpenStreetMap os dados necessários para aplicar os filtros. Não foram excluídos.</string>
+    <string name="parking_filter_empty">Nenhum parque corresponde aos filtros.</string>
+
+    <string name="parking_badge_free">Grátis</string>
+    <string name="parking_badge_open">Aberto</string>
+    <string name="parking_badge_closed">Fechado</string>
+    <string name="parking_badge_covered">Coberto</string>
+    <string name="parking_badge_disabled">Mobilidade reduzida</string>
+    <string name="parking_badge_charging">Carregamento</string>
 </resources>

@@ -6,7 +6,8 @@ title: Enriquecer a informação apresentada dos parques
 created: 2026-10-01
 owner: developer
 priority: medium
-status: backlog
+status: done
+completed: 2026-10-01
 track: vcc-parking-post-mvp
 specs:
   - vp-12-rich-details-spec

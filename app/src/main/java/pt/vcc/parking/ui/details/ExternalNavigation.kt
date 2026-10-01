@@ -70,5 +70,8 @@ private fun Context.start(uri: Uri): Boolean {
     }
 }
 
+/** Abre um endereco no navegador; `false` quando nao ha nenhum instalado. */
+internal fun Context.openExternalUrl(uri: Uri): Boolean = start(uri)
+
 // Uma locale com virgula decimal produziria um URI que nenhum mapa interpreta.
 private fun Double.asCoordinate(): String = String.format(Locale.ROOT, "%.6f", this)

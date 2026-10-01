@@ -25,6 +25,18 @@ fun Parking.toEntity(updatedAtMillis: Long): ParkingEntity = ParkingEntity(
     zoneColour = zoneColour,
     phone = phone,
     website = website,
+    charge = charge,
+    feeConditional = feeConditional,
+    maxHeightMeters = maxHeightMeters,
+    maxStay = maxStay,
+    condition = condition,
+    supervised = supervised,
+    covered = covered,
+    chargingCapacity = chargingCapacity,
+    parentCapacity = parentCapacity,
+    paymentMethods = paymentMethods
+        .takeIf { it.isNotEmpty() }
+        ?.joinToString(ParkingEntity.PAYMENT_SEPARATOR),
     updatedAt = updatedAtMillis,
 )
 
@@ -45,6 +57,19 @@ fun ParkingEntity.toParking(): Parking = Parking(
     zoneColour = zoneColour,
     phone = phone,
     website = website,
+    charge = charge,
+    feeConditional = feeConditional,
+    maxHeightMeters = maxHeightMeters,
+    maxStay = maxStay,
+    condition = condition,
+    supervised = supervised,
+    covered = covered,
+    chargingCapacity = chargingCapacity,
+    parentCapacity = parentCapacity,
+    paymentMethods = paymentMethods
+        ?.split(ParkingEntity.PAYMENT_SEPARATOR)
+        ?.filter { it.isNotEmpty() }
+        .orEmpty(),
 )
 
 fun List<Parking>.toEntities(updatedAtMillis: Long): List<ParkingEntity> =

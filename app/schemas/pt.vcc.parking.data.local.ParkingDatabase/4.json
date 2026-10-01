@@ -1,0 +1,295 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 4,
+    "identityHash": "a69c19df2aa0997a14991a38cb03cd67",
+    "entities": [
+      {
+        "tableName": "parking",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`osmType` TEXT NOT NULL, `osmId` INTEGER NOT NULL, `latitude` REAL NOT NULL, `longitude` REAL NOT NULL, `name` TEXT, `parkingType` TEXT, `capacity` INTEGER, `operator` TEXT, `access` TEXT, `fee` TEXT, `openingHours` TEXT, `disabledCapacity` INTEGER, `zone` TEXT, `zoneColour` TEXT, `phone` TEXT, `website` TEXT, `charge` TEXT, `feeConditional` TEXT, `maxHeightMeters` REAL, `maxStay` TEXT, `condition` TEXT, `supervised` INTEGER, `covered` INTEGER, `chargingCapacity` INTEGER, `parentCapacity` INTEGER, `paymentMethods` TEXT, `updatedAt` INTEGER NOT NULL, PRIMARY KEY(`osmType`, `osmId`))",
+        "fields": [
+          {
+            "fieldPath": "osmType",
+            "columnName": "osmType",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "osmId",
+            "columnName": "osmId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "latitude",
+            "columnName": "latitude",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "longitude",
+            "columnName": "longitude",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "parkingType",
+            "columnName": "parkingType",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "capacity",
+            "columnName": "capacity",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "operator",
+            "columnName": "operator",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "access",
+            "columnName": "access",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "fee",
+            "columnName": "fee",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "openingHours",
+            "columnName": "openingHours",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "disabledCapacity",
+            "columnName": "disabledCapacity",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "zone",
+            "columnName": "zone",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "zoneColour",
+            "columnName": "zoneColour",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "phone",
+            "columnName": "phone",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "website",
+            "columnName": "website",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "charge",
+            "columnName": "charge",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "feeConditional",
+            "columnName": "feeConditional",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "maxHeightMeters",
+            "columnName": "maxHeightMeters",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "maxStay",
+            "columnName": "maxStay",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "condition",
+            "columnName": "condition",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "supervised",
+            "columnName": "supervised",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "covered",
+            "columnName": "covered",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "chargingCapacity",
+            "columnName": "chargingCapacity",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "parentCapacity",
+            "columnName": "parentCapacity",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "paymentMethods",
+            "columnName": "paymentMethods",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updatedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "osmType",
+            "osmId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_parking_latitude_longitude",
+            "unique": false,
+            "columnNames": [
+              "latitude",
+              "longitude"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_parking_latitude_longitude` ON `${TABLE_NAME}` (`latitude`, `longitude`)"
+          }
+        ]
+      },
+      {
+        "tableName": "parked_car",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `latitude` REAL NOT NULL, `longitude` REAL NOT NULL, `accuracyMeters` REAL, `parkedAtMillis` INTEGER NOT NULL, `endedAtMillis` INTEGER, `note` TEXT, `photoUri` TEXT, `osmType` TEXT, `osmId` INTEGER)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "latitude",
+            "columnName": "latitude",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "longitude",
+            "columnName": "longitude",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "accuracyMeters",
+            "columnName": "accuracyMeters",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "parkedAtMillis",
+            "columnName": "parkedAtMillis",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "endedAtMillis",
+            "columnName": "endedAtMillis",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "note",
+            "columnName": "note",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "photoUri",
+            "columnName": "photoUri",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "osmType",
+            "columnName": "osmType",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "osmId",
+            "columnName": "osmId",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_parked_car_endedAtMillis",
+            "unique": false,
+            "columnNames": [
+              "endedAtMillis"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_parked_car_endedAtMillis` ON `${TABLE_NAME}` (`endedAtMillis`)"
+          }
+        ]
+      },
+      {
+        "tableName": "parking_reminder",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`parkedCarId` INTEGER NOT NULL, `expiresAtMillis` INTEGER, `warnBeforeMillis` INTEGER NOT NULL, `recurringEveryMillis` INTEGER, `dismissed` INTEGER NOT NULL, PRIMARY KEY(`parkedCarId`))",
+        "fields": [
+          {
+            "fieldPath": "parkedCarId",
+            "columnName": "parkedCarId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "expiresAtMillis",
+            "columnName": "expiresAtMillis",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "warnBeforeMillis",
+            "columnName": "warnBeforeMillis",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "recurringEveryMillis",
+            "columnName": "recurringEveryMillis",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "dismissed",
+            "columnName": "dismissed",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "parkedCarId"
+          ]
+        }
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'a69c19df2aa0997a14991a38cb03cd67')"
+    ]
+  }
+}

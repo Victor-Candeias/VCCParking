@@ -12,8 +12,9 @@ import org.junit.runner.RunWith
 /**
  * Rede de seguranca das migracoes com dados do utilizador: tanto a `parked_car`
  * de `vp-08-park-save` como a `parking_reminder` de `vp-11-reminders` guardam
- * informacao que nao pode ser apagada numa subida de versao. Cada teste corre a
- * migracao sobre um ficheiro real da versao anterior.
+ * informacao que nao pode ser apagada numa subida de versao, e a cache de
+ * `vp-12-rich-details` poupa uma pesquisa com rede. Cada teste corre a migracao
+ * sobre um ficheiro real da versao anterior.
  */
 @RunWith(AndroidJUnit4::class)
 class ParkingDatabaseMigrationTest {
@@ -96,6 +97,52 @@ class ParkingDatabaseMigrationTest {
         }
 
         v3.close()
+    }
+
+    /**
+     * `vp-12-rich-details` acrescentou dez colunas a cache dos parques. A
+     * migracao usa `ALTER TABLE` em vez de recriar a tabela precisamente para
+     * nao obrigar a uma pesquisa com rede no primeiro arranque apos a
+     * atualizacao — o que so vale se os dados antigos sobreviverem mesmo.
+     */
+    @Test
+    fun migratingFromThreeToFourKeepsCachedParkingsAndAddsNewColumns() {
+        helper.createDatabase(DB_NAME, 3).use { v3 ->
+            v3.execSQL(
+                "INSERT INTO `parking` (" +
+                    "`osmType`, `osmId`, `latitude`, `longitude`, `name`, `parkingType`, " +
+                    "`capacity`, `operator`, `access`, `fee`, `openingHours`, " +
+                    "`disabledCapacity`, `zone`, `zoneColour`, `phone`, `website`, `updatedAt`" +
+                    ") VALUES (" +
+                    "'way', 7, 38.7, -9.1, 'Parque Antigo', 'underground', " +
+                    "80, NULL, 'yes', 'yes', '24/7', " +
+                    "4, NULL, NULL, NULL, NULL, 2000)",
+            )
+        }
+
+        val v4 = helper.runMigrationsAndValidate(
+            DB_NAME,
+            4,
+            true,
+            ParkingDatabase.MIGRATION_3_4,
+        )
+
+        v4.query(
+            "SELECT `name`, `capacity`, `charge`, `covered`, `paymentMethods` " +
+                "FROM `parking` WHERE `osmId` = 7",
+        ).use { cursor ->
+            assertTrue("A linha em cache devia sobreviver a migracao", cursor.moveToFirst())
+            assertEquals(1, cursor.count)
+            assertEquals("Parque Antigo", cursor.getString(0))
+            assertEquals(80, cursor.getInt(1))
+            // As colunas novas ficam vazias: a app nao pode inventar o que o
+            // OSM ainda nao lhe deu.
+            assertTrue(cursor.isNull(2))
+            assertTrue(cursor.isNull(3))
+            assertTrue(cursor.isNull(4))
+        }
+
+        v4.close()
     }
 
     private companion object {

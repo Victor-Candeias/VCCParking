@@ -1,6 +1,7 @@
 package pt.vcc.parking.ui
 
 import pt.vcc.parking.data.repository.ParkingRepository
+import pt.vcc.parking.domain.FilteredParking
 import pt.vcc.parking.domain.model.Parking
 
 /**
@@ -22,6 +23,14 @@ sealed interface ParkingUiState {
         val fromCache: Boolean,
         /** Epoch millis da gravacao dos dados apresentados. */
         val updatedAtMillis: Long,
+        /**
+         * Resultado dos filtros de `vp-12-rich-details`.
+         *
+         * Guardado a parte de [parking] para que trocar um filtro nao obrigue a
+         * repetir a pesquisa: a lista completa continua disponivel e so a
+         * separacao e recalculada.
+         */
+        val filtered: FilteredParking = FilteredParking(matching = parking),
     ) : ParkingUiState {
 
         /**

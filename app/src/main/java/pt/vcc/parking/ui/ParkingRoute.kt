@@ -52,6 +52,7 @@ fun ParkingRoute(
     val locationState by locationViewModel.uiState.collectAsStateWithLifecycle()
     val parkingState by parkingViewModel.uiState.collectAsStateWithLifecycle()
     val radiusMeters by parkingViewModel.radiusMeters.collectAsStateWithLifecycle()
+    val parkingFilter by parkingViewModel.filter.collectAsStateWithLifecycle()
     val parkedCarState by parkedCarViewModel.uiState.collectAsStateWithLifecycle()
     val reminderState by reminderViewModel.uiState.collectAsStateWithLifecycle()
 
@@ -123,6 +124,7 @@ fun ParkingRoute(
         modifier = modifier,
         parkedCarState = parkedCarState,
         reminderState = reminderState,
+        filter = parkingFilter,
         onRequestPermission = { permissionLauncher.launch(LOCATION_PERMISSIONS) },
         onRefreshLocation = locationViewModel::refreshLocation,
         onOpenAppSettings = context::openAppSettings,
@@ -138,6 +140,7 @@ fun ParkingRoute(
         onUpdateParkedCarDetails = parkedCarViewModel::updateDetails,
         onEndParkedCar = parkedCarViewModel::endActive,
         onDismissParkedCarError = parkedCarViewModel::dismissCaptureError,
+        onFilterChanged = parkingViewModel::onFilterChanged,
         onSaveReminder = reminderViewModel::setReminder,
         onExtendReminder = reminderViewModel::extend,
         onRemoveReminder = reminderViewModel::clear,

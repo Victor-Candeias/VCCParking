@@ -81,6 +81,11 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
+
+        // `vp-12-rich-details` interpreta horarios e precos com `java.time`, que
+        // so chegou na API 26. Sem isto, ou a app perdia os dispositivos entre a
+        // 24 e a 25, ou o calendario tinha de ser reescrito a mao.
+        isCoreLibraryDesugaringEnabled = true
     }
 
     testOptions {
@@ -115,6 +120,8 @@ kotlin {
 }
 
 dependencies {
+    coreLibraryDesugaring(libs.desugar.jdk.libs)
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.runtime.compose)

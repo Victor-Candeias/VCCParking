@@ -8,8 +8,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -19,7 +21,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import java.time.LocalDateTime
 import pt.vcc.parking.R
+import pt.vcc.parking.domain.FilteredParking
+import pt.vcc.parking.domain.OpeningHours
 import pt.vcc.parking.domain.model.Parking
 import pt.vcc.parking.ui.capacityLabel
 import pt.vcc.parking.ui.distanceLabel
@@ -38,14 +43,81 @@ fun ParkingList(
     modifier: Modifier = Modifier,
     onParkingSelected: (Parking) -> Unit = {},
 ) {
+    ParkingList(
+        filtered = FilteredParking(matching = parking),
+        modifier = modifier,
+        onParkingSelected = onParkingSelected,
+    )
+}
+
+/**
+ * Lista com a seccao dos parques sem informacao suficiente
+ * (`vp-12-rich-details`).
+ *
+ * Os incertos ficam no fim e com explicacao, em vez de escondidos: a app nao
+ * pode deixar o utilizador a pensar que nao existe mais nada por perto so
+ * porque o OSM nao tem as tags que o filtro precisa.
+ */
+@Composable
+fun ParkingList(
+    filtered: FilteredParking,
+    modifier: Modifier = Modifier,
+    onParkingSelected: (Parking) -> Unit = {},
+) {
     LazyColumn(modifier = modifier.fillMaxWidth()) {
-        items(items = parking, key = { it.id }) { item ->
+        items(items = filtered.matching, key = { it.id }) { item ->
             ParkingListItem(
                 parking = item,
                 onClick = { onParkingSelected(item) },
             )
             HorizontalDivider()
         }
+
+        if (filtered.matching.isEmpty()) {
+            item(key = EMPTY_MATCHES_KEY) {
+                Text(
+                    text = stringResource(R.string.parking_filter_empty),
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 24.dp),
+                )
+            }
+        }
+
+        if (filtered.unknown.isNotEmpty()) {
+            item(key = UNKNOWN_HEADER_KEY) {
+                UnknownHeader(count = filtered.unknown.size)
+            }
+
+            items(items = filtered.unknown, key = { "unknown-${it.id}" }) { item ->
+                ParkingListItem(
+                    parking = item,
+                    onClick = { onParkingSelected(item) },
+                )
+                HorizontalDivider()
+            }
+        }
+    }
+}
+
+@Composable
+private fun UnknownHeader(count: Int, modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        Text(
+            text = stringResource(R.string.parking_filter_unknown_header, count),
+            style = MaterialTheme.typography.titleSmall,
+        )
+        Text(
+            text = stringResource(R.string.parking_filter_unknown_explanation),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }
 
@@ -95,6 +167,57 @@ private fun ParkingListItem(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
+
+        ParkingBadges(parking = parking)
+    }
+}
+
+/**
+ * Indicadores de `vp-12-rich-details`.
+ *
+ * So aparecem com tag explicita: um parque sem `covered` nao recebe indicador
+ * nenhum — nem de coberto nem de descoberto — porque a ausencia da tag nao diz
+ * nada sobre o parque.
+ */
+@Composable
+private fun ParkingBadges(parking: Parking, modifier: Modifier = Modifier) {
+    val badges = buildList {
+        if (parking.isFree == true) add(stringResource(R.string.parking_badge_free))
+
+        when (OpeningHours.parse(parking.openingHours, LocalDateTime.now())) {
+            is OpeningHours.AlwaysOpen, is OpeningHours.Open ->
+                add(stringResource(R.string.parking_badge_open))
+
+            is OpeningHours.Closed -> add(stringResource(R.string.parking_badge_closed))
+            is OpeningHours.Unknown -> Unit
+        }
+
+        if (parking.covered == true) add(stringResource(R.string.parking_badge_covered))
+        if (parking.hasDisabledSpaces == true) {
+            add(stringResource(R.string.parking_badge_disabled))
+        }
+        if (parking.hasChargingSpaces == true) {
+            add(stringResource(R.string.parking_badge_charging))
+        }
+    }
+
+    if (badges.isEmpty()) return
+
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        badges.forEach { badge ->
+            // Desativado de proposito: e um rotulo, nao uma accao.
+            SuggestionChip(
+                onClick = {},
+                enabled = false,
+                label = {
+                    Text(text = badge, style = MaterialTheme.typography.labelSmall)
+                },
+                border = AssistChipDefaults.assistChipBorder(enabled = false),
+            )
+        }
     }
 }
 
@@ -115,6 +238,9 @@ private fun summaryLine(parking: Parking): String {
     }
 }
 
+private const val EMPTY_MATCHES_KEY = "empty-matches"
+private const val UNKNOWN_HEADER_KEY = "unknown-header"
+
 @Preview(showBackground = true)
 @Composable
 private fun ParkingListPreview() {
@@ -130,6 +256,8 @@ private fun ParkingListPreview() {
                     parkingType = "underground",
                     capacity = 120,
                     fee = "yes",
+                    openingHours = "24/7",
+                    covered = true,
                     distanceMeters = 350.0,
                 ),
                 Parking(

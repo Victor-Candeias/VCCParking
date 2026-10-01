@@ -18,6 +18,7 @@ import pt.vcc.parking.data.remote.OverpassError
 import pt.vcc.parking.data.remote.OverpassResult
 import pt.vcc.parking.data.remote.OverpassService
 import pt.vcc.parking.data.repository.ParkingRepository
+import pt.vcc.parking.domain.ParkingFilter
 import pt.vcc.parking.domain.model.Parking
 import pt.vcc.parking.location.UserLocation
 
@@ -162,11 +163,80 @@ class ParkingViewModelTest {
         assertFalse(remote.isStale(NOW))
     }
 
+    // vp-12-rich-details
+
+    @Test
+    fun `without filters every parking is in the matching list`() {
+        val remote = RecordingOverpassService(success(NEAR, FREE, PAID))
+        val viewModel = viewModel(remote)
+
+        viewModel.onUserLocation(userLocation())
+
+        val state = viewModel.uiState.value as ParkingUiState.Success
+        assertEquals(3, state.filtered.matching.size)
+        assertTrue(state.filtered.unknown.isEmpty())
+    }
+
+    @Test
+    fun `filtering by free keeps the paid out and the untagged apart`() {
+        val remote = RecordingOverpassService(success(NEAR, FREE, PAID))
+        val viewModel = viewModel(remote)
+        viewModel.onUserLocation(userLocation())
+
+        viewModel.onFilterChanged(ParkingFilter(freeOnly = true))
+
+        val state = viewModel.uiState.value as ParkingUiState.Success
+        assertEquals(listOf("node/2"), state.filtered.matching.map { it.id })
+        // Sem a tag `fee` o parque nao pode ser excluido nem dado como gratuito.
+        assertEquals(listOf("node/1"), state.filtered.unknown.map { it.id })
+        // A lista completa continua intacta para quando o filtro for levantado.
+        assertEquals(3, state.parking.size)
+    }
+
+    @Test
+    fun `changing the filter does not repeat the search`() {
+        val remote = RecordingOverpassService(success(NEAR, FREE, PAID))
+        val viewModel = viewModel(remote)
+        viewModel.onUserLocation(userLocation())
+
+        viewModel.onFilterChanged(ParkingFilter(freeOnly = true))
+        viewModel.onFilterChanged(ParkingFilter(freeOnly = true, coveredOnly = true))
+
+        assertEquals(1, remote.calls.size)
+    }
+
+    @Test
+    fun `clearing the filter brings every parking back`() {
+        val remote = RecordingOverpassService(success(NEAR, FREE, PAID))
+        val viewModel = viewModel(remote)
+        viewModel.onUserLocation(userLocation())
+        viewModel.onFilterChanged(ParkingFilter(freeOnly = true))
+
+        viewModel.onFilterChanged(ParkingFilter())
+
+        val state = viewModel.uiState.value as ParkingUiState.Success
+        assertEquals(3, state.filtered.matching.size)
+        assertTrue(state.filtered.unknown.isEmpty())
+        assertEquals(ParkingFilter(), viewModel.filter.value)
+    }
+
+    @Test
+    fun `a new search keeps the filter that is already on`() {
+        val remote = RecordingOverpassService(success(NEAR, FREE, PAID))
+        val viewModel = viewModel(remote)
+        viewModel.onUserLocation(userLocation())
+        viewModel.onFilterChanged(ParkingFilter(freeOnly = true))
+
+        viewModel.searchArea(FAR_LATITUDE, FAR_LONGITUDE)
+
+        val state = viewModel.uiState.value as ParkingUiState.Success
+        assertEquals(listOf("node/2"), state.filtered.matching.map { it.id })
+    }
+
     private fun viewModel(
         remote: OverpassService,
         cache: ParkingCache = EmptyParkingCache(),
     ) = ParkingViewModel(ParkingRepository(remote = remote, cache = cache, now = { NOW }))
-
     private fun userLocation(
         latitude: Double = LATITUDE,
         longitude: Double = LONGITUDE,
@@ -227,6 +297,23 @@ class ParkingViewModelTest {
             lat = LATITUDE + 0.001,
             lon = LONGITUDE,
             tags = emptyMap(),
+        )
+
+        /** Gratuito declarado: `fee=no` e um «nao» explicito, nao uma ausencia. */
+        val FREE = OverpassElement(
+            type = "node",
+            id = 2L,
+            lat = LATITUDE + 0.002,
+            lon = LONGITUDE,
+            tags = mapOf("amenity" to "parking", "fee" to "no"),
+        )
+
+        val PAID = OverpassElement(
+            type = "node",
+            id = 3L,
+            lat = LATITUDE + 0.003,
+            lon = LONGITUDE,
+            tags = mapOf("amenity" to "parking", "fee" to "yes"),
         )
 
         fun success(vararg elements: OverpassElement) =

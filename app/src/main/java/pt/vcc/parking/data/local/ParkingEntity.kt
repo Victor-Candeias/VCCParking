@@ -34,10 +34,29 @@ data class ParkingEntity(
     val zoneColour: String? = null,
     val phone: String? = null,
     val website: String? = null,
+    /** `vp-12-rich-details`; `paymentMethods` e guardado como lista separada por `;`. */
+    val charge: String? = null,
+    val feeConditional: String? = null,
+    val maxHeightMeters: Double? = null,
+    val maxStay: String? = null,
+    val condition: String? = null,
+    val supervised: Boolean? = null,
+    val covered: Boolean? = null,
+    val chargingCapacity: Int? = null,
+    val parentCapacity: Int? = null,
+    val paymentMethods: String? = null,
     /** Epoch millis da gravacao; base da politica de frescura da seccao 18. */
     val updatedAt: Long,
 ) {
     companion object {
         const val TABLE = "parking"
+
+        /**
+         * Separador dos meios de pagamento.
+         *
+         * E o mesmo que o OSM usa em valores multiplos e nao aparece dentro de
+         * um nome de meio de pagamento, pelo que nao ha nada a escapar.
+         */
+        const val PAYMENT_SEPARATOR = ";"
     }
 }

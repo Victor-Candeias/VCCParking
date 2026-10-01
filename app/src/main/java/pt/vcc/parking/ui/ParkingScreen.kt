@@ -44,6 +44,7 @@ import androidx.compose.ui.zIndex
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.launch
 import pt.vcc.parking.R
+import pt.vcc.parking.domain.ParkingFilter
 import pt.vcc.parking.domain.model.ParkedCar
 import pt.vcc.parking.domain.model.Parking
 import pt.vcc.parking.location.LocationUiState
@@ -53,6 +54,8 @@ import pt.vcc.parking.parked.ParkedCarUiState
 import pt.vcc.parking.reminder.ReminderUiState
 import pt.vcc.parking.ui.details.ParkingDetailsSheet
 import pt.vcc.parking.ui.details.openExternalNavigation
+import pt.vcc.parking.ui.filters.ParkingFilterBar
+import pt.vcc.parking.ui.filters.ParkingFilterSheet
 import pt.vcc.parking.ui.list.ParkingList
 import pt.vcc.parking.ui.map.ParkingMap
 import pt.vcc.parking.ui.parked.ParkHereButton
@@ -71,6 +74,7 @@ fun ParkingScreen(
     modifier: Modifier = Modifier,
     parkedCarState: ParkedCarUiState = ParkedCarUiState.Empty,
     reminderState: ReminderUiState = ReminderUiState(),
+    filter: ParkingFilter = ParkingFilter(),
     onRequestPermission: () -> Unit = {},
     onRefreshLocation: () -> Unit = {},
     onOpenAppSettings: () -> Unit = {},
@@ -87,6 +91,7 @@ fun ParkingScreen(
         { _, _, _ -> },
     onEndParkedCar: () -> Unit = {},
     onDismissParkedCarError: () -> Unit = {},
+    onFilterChanged: (ParkingFilter) -> Unit = {},
     onSaveReminder: (
         durationMillis: Long?,
         warnBeforeMillis: Long,
@@ -129,6 +134,7 @@ fun ParkingScreen(
                 modifier = content,
                 parkedCarState = parkedCarState,
                 reminderState = reminderState,
+                filter = filter,
                 onRadiusSelected = onRadiusSelected,
                 onSearchArea = onSearchArea,
                 onRetry = onRetry,
@@ -145,6 +151,7 @@ fun ParkingScreen(
                 onEndParkedCar = onEndParkedCar,
                 onDismissParkedCarError = onDismissParkedCarError,
                 onRequestPermission = onRequestPermission,
+                onFilterChanged = onFilterChanged,
                 onSaveReminder = onSaveReminder,
                 onExtendReminder = onExtendReminder,
                 onRemoveReminder = onRemoveReminder,
@@ -171,6 +178,7 @@ private fun ParkingContent(
     modifier: Modifier = Modifier,
     parkedCarState: ParkedCarUiState = ParkedCarUiState.Empty,
     reminderState: ReminderUiState = ReminderUiState(),
+    filter: ParkingFilter = ParkingFilter(),
     onRadiusSelected: (Int) -> Unit = {},
     onSearchArea: (latitude: Double, longitude: Double) -> Unit = { _, _ -> },
     onRetry: () -> Unit = {},
@@ -184,6 +192,7 @@ private fun ParkingContent(
     onEndParkedCar: () -> Unit = {},
     onDismissParkedCarError: () -> Unit = {},
     onRequestPermission: () -> Unit = {},
+    onFilterChanged: (ParkingFilter) -> Unit = {},
     onSaveReminder: (
         durationMillis: Long?,
         warnBeforeMillis: Long,
@@ -193,8 +202,16 @@ private fun ParkingContent(
     onRemoveReminder: () -> Unit = {},
     onReminderCapabilitiesChanged: () -> Unit = {},
 ) {
-    val parking = (parkingState as? ParkingUiState.Success)?.parking.orEmpty()
+    val success = parkingState as? ParkingUiState.Success
+    val parking = success?.parking.orEmpty()
     val parkedCar = parkedCarState.parkedCar
+
+    // O mapa mostra o mesmo que a lista: os que cumprem o filtro e os incertos.
+    // Deixar no mapa um parque que a lista escondeu seria dar duas respostas
+    // diferentes a mesma pergunta.
+    val visibleParking = remember(success) {
+        success?.filtered?.let { it.matching + it.unknown }.orEmpty()
+    }
 
     // Guardar o id e nao o parque evita manter uma copia desatualizada da lista
     // depois de uma nova pesquisa.
@@ -203,6 +220,7 @@ private fun ParkingContent(
 
     var editingParkedCar by rememberSaveable { mutableStateOf(false) }
     var editingReminder by rememberSaveable { mutableStateOf(false) }
+    var editingFilters by rememberSaveable { mutableStateOf(false) }
     var pinTarget by remember { mutableStateOf<PinTarget?>(null) }
 
     var mapCenter by remember {
@@ -218,7 +236,7 @@ private fun ParkingContent(
         ) {
             ParkingMap(
                 userLocation = userLocation,
-                parking = parking,
+                parking = visibleParking,
                 modifier = Modifier.fillMaxSize(),
                 parkedCar = parkedCar,
                 onParkingSelected = { selectedParkingId = it.id },
@@ -294,8 +312,11 @@ private fun ParkingContent(
             modifier = Modifier
                 .zIndex(1f)
                 .background(MaterialTheme.colorScheme.surface),
+            filter = filter,
             onRadiusSelected = onRadiusSelected,
             onRetry = onRetry,
+            onFilterChanged = onFilterChanged,
+            onOpenFilters = { editingFilters = true },
         )
 
         HorizontalDivider()
@@ -311,6 +332,14 @@ private fun ParkingContent(
                 onParkingSelected = { selectedParkingId = it.id },
             )
         }
+    }
+
+    if (editingFilters) {
+        ParkingFilterSheet(
+            filter = filter,
+            onFilterChanged = onFilterChanged,
+            onDismiss = { editingFilters = false },
+        )
     }
 
     if (selectedParking != null) {
@@ -444,8 +473,11 @@ private fun ResultsHeader(
     parkingState: ParkingUiState,
     radiusMeters: Int,
     modifier: Modifier = Modifier,
+    filter: ParkingFilter = ParkingFilter(),
     onRadiusSelected: (Int) -> Unit = {},
     onRetry: () -> Unit = {},
+    onFilterChanged: (ParkingFilter) -> Unit = {},
+    onOpenFilters: () -> Unit = {},
 ) {
     Column(
         modifier = modifier
@@ -471,12 +503,13 @@ private fun ResultsHeader(
             )
 
             is ParkingUiState.Success -> {
+                // Com filtro ligado a contagem e a do que esta mesmo a ser
+                // mostrado, incertos incluidos; a contagem total escondia que
+                // ha parques de fora.
+                val count = parkingState.filtered.total
+
                 Text(
-                    text = pluralStringResource(
-                        R.plurals.parking_found,
-                        parkingState.parking.size,
-                        parkingState.parking.size,
-                    ),
+                    text = pluralStringResource(R.plurals.parking_found, count, count),
                     style = MaterialTheme.typography.titleMedium,
                 )
                 CacheNotice(state = parkingState, onRetry = onRetry)
@@ -486,6 +519,12 @@ private fun ResultsHeader(
         RadiusSelector(
             radiusMeters = radiusMeters,
             onRadiusSelected = onRadiusSelected,
+        )
+
+        ParkingFilterBar(
+            filter = filter,
+            onFilterChanged = onFilterChanged,
+            onOpenFilters = onOpenFilters,
         )
     }
 }
@@ -590,7 +629,7 @@ private fun ParkingResults(
             )
         } else {
             ParkingList(
-                parking = parkingState.parking,
+                filtered = parkingState.filtered,
                 modifier = modifier.fillMaxSize(),
                 onParkingSelected = onParkingSelected,
             )

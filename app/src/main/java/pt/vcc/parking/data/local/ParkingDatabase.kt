@@ -16,12 +16,13 @@ import androidx.sqlite.db.SupportSQLiteDatabase
  * [MIGRATION_1_2] explicita. A destruicao so se mantem na descida de versao,
  * onde nao ha migracao possivel.
  *
- * A versao 3 acrescenta `parking_reminder` (`vp-11-reminders`) com a mesma
- * regra: migracao explicita, sem apagar nada.
+ * A versao 3 acrescenta `parking_reminder` (`vp-11-reminders`) e a versao 4
+ * alarga a cache de parques com as tags de `vp-12-rich-details`, ambas com a
+ * mesma regra: migracao explicita, sem apagar nada.
  */
 @Database(
     entities = [ParkingEntity::class, ParkedCarEntity::class, ParkingReminderEntity::class],
-    version = 3,
+    version = 4,
     exportSchema = true,
 )
 abstract class ParkingDatabase : RoomDatabase() {
@@ -86,6 +87,34 @@ abstract class ParkingDatabase : RoomDatabase() {
             }
         }
 
+        /**
+         * Acrescenta as colunas de `vp-12-rich-details` a cache dos parques.
+         *
+         * Sao `ALTER TABLE ... ADD COLUMN` e nao uma recriacao da tabela:
+         * apagar a cache obrigaria toda a gente a uma pesquisa nova com rede no
+         * primeiro arranque apos a atualizacao. Todas as colunas sao opcionais,
+         * pelo que as linhas antigas ficam validas sem valor por omissao — que
+         * seria sempre errado, porque `null` aqui significa «o OSM nao diz».
+         */
+        val MIGRATION_3_4: Migration = object : Migration(3, 4) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                listOf(
+                    "`charge` TEXT",
+                    "`feeConditional` TEXT",
+                    "`maxHeightMeters` REAL",
+                    "`maxStay` TEXT",
+                    "`condition` TEXT",
+                    "`supervised` INTEGER",
+                    "`covered` INTEGER",
+                    "`chargingCapacity` INTEGER",
+                    "`parentCapacity` INTEGER",
+                    "`paymentMethods` TEXT",
+                ).forEach { column ->
+                    db.execSQL("ALTER TABLE `${ParkingEntity.TABLE}` ADD COLUMN $column")
+                }
+            }
+        }
+
         @Volatile
         private var instance: ParkingDatabase? = null
 
@@ -100,7 +129,7 @@ abstract class ParkingDatabase : RoomDatabase() {
                 ParkingDatabase::class.java,
                 NAME,
             )
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
                 .fallbackToDestructiveMigrationOnDowngrade(dropAllTables = true)
                 .build()
     }

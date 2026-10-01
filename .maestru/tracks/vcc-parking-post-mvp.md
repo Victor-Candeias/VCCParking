@@ -24,7 +24,7 @@ informação apresentada. Pressupõe o MVP validado em `vp-07-testing`.
 | vp-09-return-route | Guiar o utilizador de volta ao carro | done | 2026-10-01 | developer | high | 2026-10-01 |  | vp-08-park-save | [vp-09-return-route](../specs/vcc-parking-post-mvp/vp-09-return-route-spec.md) |
 | vp-10-history | Histórico de estacionamentos | done | 2026-10-01 | developer | medium | 2026-10-01 |  | vp-08-park-save | [vp-10-history](../specs/vcc-parking-post-mvp/vp-10-history-spec.md) |
 | vp-11-reminders | Lembretes e notificações de estacionamento | done | 2026-10-01 | developer | medium | 2026-10-01 |  | vp-08-park-save | [vp-11-reminders](../specs/vcc-parking-post-mvp/vp-11-reminders-spec.md) |
-| vp-12-rich-details | Enriquecer a informação apresentada dos parques | backlog | 2026-10-01 | developer | medium |  |  |  | [vp-12-rich-details](../specs/vcc-parking-post-mvp/vp-12-rich-details-spec.md) |
+| vp-12-rich-details | Enriquecer a informação apresentada dos parques | done | 2026-10-01 | developer | medium | 2026-10-01 |  |  | [vp-12-rich-details](../specs/vcc-parking-post-mvp/vp-12-rich-details-spec.md) |
 | vp-13-data-sources | Avaliar fontes de dados alternativas à Overpass | backlog | 2026-10-01 | developer | medium |  |  |  | [vp-13-data-sources](../specs/vcc-parking-post-mvp/vp-13-data-sources-spec.md) |
 | vp-14-realtime | Integrar dados de lotação e preços em tempo real | backlog | 2026-10-01 | developer | low |  |  | vp-13-data-sources | [vp-14-realtime](../specs/vcc-parking-post-mvp/vp-14-realtime-spec.md) |
 <!-- /maestru:work-items-list -->

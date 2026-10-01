@@ -10,11 +10,14 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import pt.vcc.parking.VccParkingApplication
 import pt.vcc.parking.data.repository.ParkingRepository
 import pt.vcc.parking.data.repository.ParkingResult
 import pt.vcc.parking.domain.GeoDistance
+import pt.vcc.parking.domain.ParkingFilter
+import pt.vcc.parking.domain.applyFilter
 import pt.vcc.parking.domain.model.Parking
 import pt.vcc.parking.domain.sortedByDistance
 import pt.vcc.parking.domain.withDistanceFrom
@@ -33,6 +36,9 @@ class ParkingViewModel(private val repository: ParkingRepository) : ViewModel() 
 
     private val _radiusMeters = MutableStateFlow(SearchRadius.DEFAULT_METERS)
     val radiusMeters: StateFlow<Int> = _radiusMeters.asStateFlow()
+
+    private val _filter = MutableStateFlow(ParkingFilter())
+    val filter: StateFlow<ParkingFilter> = _filter.asStateFlow()
 
     private var userLocation: UserLocation? = null
     private var searchCenter: SearchCenter? = null
@@ -73,6 +79,22 @@ class ParkingViewModel(private val repository: ParkingRepository) : ViewModel() 
         search(latitude, longitude, forceRefresh = true)
     }
 
+    /**
+     * Filtros de `vp-12-rich-details`.
+     *
+     * Nao relanca a pesquisa: os criterios sao todos respondidos pelos dados ja
+     * em memoria, e ir ao Overpass de cada vez que um interruptor muda gastaria
+     * rede para devolver exatamente a mesma lista.
+     */
+    fun onFilterChanged(filter: ParkingFilter) {
+        if (_filter.value == filter) return
+        _filter.value = filter
+
+        _uiState.update { state ->
+            if (state is ParkingUiState.Success) state.filteredBy(filter) else state
+        }
+    }
+
     /** «Tentar novamente» da seccao 27. */
     fun retry() {
         val center = searchCenter
@@ -102,13 +124,17 @@ class ParkingViewModel(private val repository: ParkingRepository) : ViewModel() 
             parking = parking.relativeToUser(),
             fromCache = fromCache,
             updatedAtMillis = updatedAtMillis,
-        )
+        ).filteredBy(_filter.value)
 
         is ParkingResult.Failure -> {
             Log.w(TAG, "Pesquisa falhou apos ${attempts.size} tentativa(s)")
             ParkingUiState.Error
         }
     }
+
+    /** A separacao parte sempre da lista completa, nunca da anterior ja filtrada. */
+    private fun ParkingUiState.Success.filteredBy(filter: ParkingFilter): ParkingUiState.Success =
+        copy(filtered = parking.applyFilter(filter))
 
     /**
      * O repositorio mede a distancia a partir do ponto pesquisado. Numa pesquisa

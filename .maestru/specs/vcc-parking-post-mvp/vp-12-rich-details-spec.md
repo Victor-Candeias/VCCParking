@@ -190,3 +190,14 @@ Verificação da fase 3:
 | `app/src/test/java/pt/vcc/parking/domain/ParkingChargeTest.kt` | Create | Testes de preço |
 | `app/src/test/java/pt/vcc/parking/domain/ParkingFiltersTest.kt` | Create | Testes dos filtros |
 | `app/src/test/java/pt/vcc/parking/ui/ParkingFormatTest.kt` | Create | Testes de formatação |
+
+## Desvios da implementação
+
+| Previsto | Implementado | Porquê |
+|---|---|---|
+| `ui/filters/ParkingFilterChips.kt` | `ui/filters/ParkingFilterBar.kt` | A barra junta o botão «Filtros» e os dois atalhos mais usados; ficheiros separados para a mesma linha de chips só dispersavam o estado. |
+| `ui/ParkingFormatTest.kt` | `ui/details/ContributeToOsmTest.kt` e `ui/filters/ParkingFilterSheetTest.kt` | Os rótulos são `@Composable` com `stringResource` e o projeto não tem Robolectric, por isso não há como os correr em teste unitário. Foi testada a lógica pura que deles se extraiu: o endereço do editor do OSM e a leitura da altura escrita à mão. |
+| Nada previsto sobre o `minSdk` | `isCoreLibraryDesugaringEnabled` ligado | A interpretação de horários usa `java.time`, que só existe a partir da API 26. Sem desugaring a app perdia os dispositivos entre a 24 e a 25 — ou obrigava a reescrever o calendário à mão. |
+| Filtros a decidir o que a lista mostra | Filtros também decidem os marcadores do mapa | Deixar no mapa um parque que a lista escondeu dava duas respostas diferentes à mesma pergunta. |
+| Contagem de resultados do cabeçalho | Passa a contar o que está a ser mostrado | Com filtro ligado a contagem total escondia que havia parques de fora. |
+| «Mostrar a origem e a data da informação» (mitigação dos preços) | Mantida a data da cache já existente no cabeçalho, mais a ligação de contribuição no detalhe | A data de atualização já era mostrada pelo aviso de cache; repeti-la em cada preço era ruído. |
