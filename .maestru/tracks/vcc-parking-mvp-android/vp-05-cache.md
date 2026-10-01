@@ -5,7 +5,9 @@ id: vp-05-cache
 title: Implementar cache local com Room
 created: 2026-09-30
 priority: high
-status: backlog
+status: done
+owner: developer
+completed: 2026-10-01
 track: vcc-parking-mvp-android
 specs:
   - vp-05-cache-spec
