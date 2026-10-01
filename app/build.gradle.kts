@@ -86,6 +86,16 @@ android {
     testOptions {
         unitTests.isReturnDefaultValues = true
     }
+
+    // O teste de migracao de `vp-08-park-save` precisa dos esquemas exportados
+    // para conseguir criar a base de dados na versao anterior.
+    sourceSets.getByName("androidTest").assets.directories.add(
+        layout.projectDirectory.dir("schemas").asFile.path,
+    )
+}
+
+ksp {
+    arg("room.schemaLocation", layout.projectDirectory.dir("schemas").asFile.path)
 }
 
 androidComponents {
@@ -137,6 +147,7 @@ dependencies {
     testImplementation(libs.kotlinx.coroutines.test)
 
     androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.room.testing)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)

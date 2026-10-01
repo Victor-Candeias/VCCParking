@@ -77,4 +77,58 @@
     <string name="parking_type_carports">Alpendre</string>
     <string name="parking_type_garage_boxes">Boxes</string>
     <string name="parking_type_sheds">Garagens</string>
+
+    <!-- vp-08-park-save: registo do local onde o carro ficou -->
+    <string name="parked_marker">O seu carro</string>
+    <string name="parked_title">O seu carro</string>
+    <string name="parked_action_park_here">Estacionei aqui</string>
+    <string name="parked_action_park_at_parking">Estacionei neste parque</string>
+    <string name="parked_capturing">A guardar a posição do carro…</string>
+
+    <string name="parked_since_now">Estacionado agora mesmo</string>
+    <plurals name="parked_since_minutes">
+        <item quantity="one">Estacionado há %1$d minuto</item>
+        <item quantity="many">Estacionado há %1$d minutos</item>
+        <item quantity="other">Estacionado há %1$d minutos</item>
+    </plurals>
+    <plurals name="parked_since_hours">
+        <item quantity="one">Estacionado há %1$d hora</item>
+        <item quantity="many">Estacionado há %1$d horas</item>
+        <item quantity="other">Estacionado há %1$d horas</item>
+    </plurals>
+    <plurals name="parked_since_days">
+        <item quantity="one">Estacionado há %1$d dia</item>
+        <item quantity="many">Estacionado há %1$d dias</item>
+        <item quantity="other">Estacionado há %1$d dias</item>
+    </plurals>
+
+    <string name="parked_accuracy_warning">Posição com cerca de %1$d m de incerteza. Pode corrigir no mapa.</string>
+    <string name="parked_photo_description">Fotografia do local de estacionamento</string>
+
+    <string name="parked_action_edit">Editar</string>
+    <string name="parked_action_adjust">Corrigir no mapa</string>
+    <string name="parked_action_end">Já saí</string>
+    <string name="parked_action_cancel">Cancelar</string>
+    <string name="parked_action_save">Guardar</string>
+    <string name="parked_action_dismiss">Fechar</string>
+    <string name="parked_action_pick_on_map">Marcar no mapa</string>
+
+    <string name="parked_end_confirm_title">Terminar estacionamento?</string>
+    <string name="parked_end_confirm_message">O registo deixa de aparecer no mapa e passa para o histórico.</string>
+    <string name="parked_end_confirm_action">Terminar</string>
+
+    <string name="parked_edit_title">Detalhes do estacionamento</string>
+    <string name="parked_edit_note_label">Nota</string>
+    <string name="parked_edit_note_placeholder">Piso -2, lugar 134</string>
+    <string name="parked_edit_photo_add">Adicionar fotografia</string>
+    <string name="parked_edit_photo_replace">Substituir fotografia</string>
+    <string name="parked_edit_photo_remove">Remover fotografia</string>
+    <string name="parked_edit_photo_failed">Não foi possível guardar a fotografia.</string>
+
+    <string name="parked_error_permission">Sem acesso à localização não é possível guardar a posição automaticamente. Pode marcar o local no mapa.</string>
+    <string name="parked_error_location_disabled">A localização do dispositivo está desligada. Pode marcar o local no mapa.</string>
+    <string name="parked_error_unavailable">Não foi possível obter a sua posição. Marque o local do carro no mapa.</string>
+
+    <string name="parked_pin_title">Arraste o mapa até ao local do carro</string>
+    <string name="parked_pin_confirm">Guardar aqui</string>
 </resources>

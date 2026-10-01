@@ -85,9 +85,15 @@ Verificação da fase 1:
 | Operação | Comportamento |
 |---|---|
 | `observeActive()` | `Flow<ParkedCar?>` para a UI reagir sem polling |
+| `observeAll()` | `Flow<List<ParkedCar>>` por ordem decrescente, base de `vp-10-history` |
 | `park(position, note, photoUri, parking)` | Termina o ativo e cria o novo registo |
 | `updateDetails(id, note, photoUri)` | Edição depois de guardar, sem repetir a captura |
+| `updatePosition(id, position)` | Corrige a posição do registo ativo sem criar outro |
 | `endActive()` | Marca `endedAtMillis`; não apaga |
+
+`updatePosition` não estava previsto no plano inicial, mas é necessário: corrigir o ponto
+através de `park()` criaria um registo espúrio no histórico de `vp-10-history`. Como um
+ponto colocado à mão não tem precisão medida, a operação limpa também `accuracyMeters`.
 
 O relógio entra por construtor (`now: () -> Long`), como em `vp-05-cache`, para manter os
 testes determinísticos.
@@ -134,9 +140,13 @@ Verificação da fase 2:
 | Modify | `app/src/main/res/values/strings.xml` | Textos da funcionalidade |
 | Create | `app/src/main/res/drawable/ic_map_car.xml` | Marcador do carro |
 
-A fotografia usa o seletor de media do sistema e a captura por `Intent`, sem permissão de
+A fotografia usa o seletor de media do sistema (`PickVisualMedia`), sem permissão de
 armazenamento. O ficheiro é copiado para o armazenamento privado da app, porque um URI de
 galeria pode deixar de ser acessível depois de o utilizador apagar a foto.
+
+A captura direta por câmara fica adiada: exigiria um `FileProvider`, um `file_paths.xml` e
+a permissão de câmara, ficheiros fora do âmbito desta implementação. O seletor de media
+cobre o caso de uso principal, já que a câmara do sistema é acessível a partir dele.
 
 Verificação da fase 3:
 
@@ -154,6 +164,7 @@ Verificação da fase 3:
 | Create | `app/src/androidTest/java/pt/vcc/parking/data/local/ParkingDatabaseMigrationTest.kt` | Migração 1 → 2 |
 | Run | `gradlew.bat :app:testDebugUnitTest` | Testes unitários |
 | Run | `gradlew.bat :app:assembleDebug` | Compilação |
+| Run | `gradlew.bat :app:assembleDebugAndroidTest` | Compilação dos testes instrumentados |
 
 ## Riscos
 
@@ -190,3 +201,7 @@ Verificação da fase 3:
 | `app/src/test/java/pt/vcc/parking/data/repository/ParkedCarRepositoryTest.kt` | Create | Testes do repositório |
 | `app/src/test/java/pt/vcc/parking/parked/ParkedCarViewModelTest.kt` | Create | Testes do ViewModel |
 | `app/src/androidTest/java/pt/vcc/parking/data/local/ParkingDatabaseMigrationTest.kt` | Create | Teste da migração 1 → 2 |
+| `app/schemas/pt.vcc.parking.data.local.ParkingDatabase/1.json` | Create | Schema exportado da versão 1, exigido pelo `MigrationTestHelper` |
+| `app/schemas/pt.vcc.parking.data.local.ParkingDatabase/2.json` | Create | Schema exportado da versão 2 |
+| `app/build.gradle.kts` | Modify | Exportação de schemas, assets do `androidTest` e `room-testing` |
+| `gradle/libs.versions.toml` | Modify | Dependência `androidx-room-testing` |

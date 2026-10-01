@@ -12,6 +12,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -46,6 +47,7 @@ fun ParkingDetailsSheet(
     modifier: Modifier = Modifier,
     onDismiss: () -> Unit = {},
     onNavigate: (Parking) -> Unit = {},
+    onParkHere: (Parking) -> Unit = {},
 ) {
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -55,6 +57,7 @@ fun ParkingDetailsSheet(
         ParkingDetails(
             parking = parking,
             onNavigate = onNavigate,
+            onParkHere = onParkHere,
         )
     }
 }
@@ -64,6 +67,7 @@ private fun ParkingDetails(
     parking: Parking,
     modifier: Modifier = Modifier,
     onNavigate: (Parking) -> Unit = {},
+    onParkHere: (Parking) -> Unit = {},
 ) {
     Column(
         modifier = modifier
@@ -129,6 +133,15 @@ private fun ParkingDetails(
             modifier = Modifier.fillMaxWidth(),
         ) {
             Text(stringResource(R.string.parking_action_navigate))
+        }
+
+        // Liga o registo a este parque; a posicao guardada continua a ser a do
+        // utilizador, porque o ponto do OSM representa o parque inteiro.
+        OutlinedButton(
+            onClick = { onParkHere(parking) },
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text(stringResource(R.string.parked_action_park_at_parking))
         }
     }
 }

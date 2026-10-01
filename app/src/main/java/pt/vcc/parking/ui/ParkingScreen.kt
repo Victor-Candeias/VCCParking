@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -40,13 +41,20 @@ import androidx.compose.ui.unit.dp
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.launch
 import pt.vcc.parking.R
+import pt.vcc.parking.domain.model.ParkedCar
 import pt.vcc.parking.domain.model.Parking
 import pt.vcc.parking.location.LocationUiState
 import pt.vcc.parking.location.UserLocation
+import pt.vcc.parking.parked.ParkedCarCaptureError
+import pt.vcc.parking.parked.ParkedCarUiState
 import pt.vcc.parking.ui.details.ParkingDetailsSheet
 import pt.vcc.parking.ui.details.openExternalNavigation
 import pt.vcc.parking.ui.list.ParkingList
 import pt.vcc.parking.ui.map.ParkingMap
+import pt.vcc.parking.ui.parked.ParkHereButton
+import pt.vcc.parking.ui.parked.ParkedCarCard
+import pt.vcc.parking.ui.parked.ParkedCarEditSheet
+import pt.vcc.parking.ui.parked.ParkedCarPinPicker
 
 /** Ecra principal da seccao 22 do documento do MVP. */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -56,6 +64,7 @@ fun ParkingScreen(
     parkingState: ParkingUiState,
     radiusMeters: Int,
     modifier: Modifier = Modifier,
+    parkedCarState: ParkedCarUiState = ParkedCarUiState.Empty,
     onRequestPermission: () -> Unit = {},
     onRefreshLocation: () -> Unit = {},
     onOpenAppSettings: () -> Unit = {},
@@ -63,6 +72,13 @@ fun ParkingScreen(
     onRadiusSelected: (Int) -> Unit = {},
     onSearchArea: (latitude: Double, longitude: Double) -> Unit = { _, _ -> },
     onRetry: () -> Unit = {},
+    onParkHere: (Parking?) -> Unit = {},
+    onParkAt: (latitude: Double, longitude: Double) -> Unit = { _, _ -> },
+    onMoveParkedCar: (id: Long, latitude: Double, longitude: Double) -> Unit = { _, _, _ -> },
+    onUpdateParkedCarDetails: (id: Long, note: String?, photoUri: String?) -> Unit =
+        { _, _, _ -> },
+    onEndParkedCar: () -> Unit = {},
+    onDismissParkedCarError: () -> Unit = {},
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -84,6 +100,7 @@ fun ParkingScreen(
                 parkingState = parkingState,
                 radiusMeters = radiusMeters,
                 modifier = content,
+                parkedCarState = parkedCarState,
                 onRadiusSelected = onRadiusSelected,
                 onSearchArea = onSearchArea,
                 onRetry = onRetry,
@@ -92,6 +109,13 @@ fun ParkingScreen(
                         scope.launch { snackbarHostState.showSnackbar(navigationUnavailable) }
                     }
                 },
+                onParkHere = onParkHere,
+                onParkAt = onParkAt,
+                onMoveParkedCar = onMoveParkedCar,
+                onUpdateParkedCarDetails = onUpdateParkedCarDetails,
+                onEndParkedCar = onEndParkedCar,
+                onDismissParkedCarError = onDismissParkedCarError,
+                onRequestPermission = onRequestPermission,
             )
         } else {
             LocationStatus(
@@ -112,17 +136,30 @@ private fun ParkingContent(
     parkingState: ParkingUiState,
     radiusMeters: Int,
     modifier: Modifier = Modifier,
+    parkedCarState: ParkedCarUiState = ParkedCarUiState.Empty,
     onRadiusSelected: (Int) -> Unit = {},
     onSearchArea: (latitude: Double, longitude: Double) -> Unit = { _, _ -> },
     onRetry: () -> Unit = {},
     onNavigate: (Parking) -> Unit = {},
+    onParkHere: (Parking?) -> Unit = {},
+    onParkAt: (latitude: Double, longitude: Double) -> Unit = { _, _ -> },
+    onMoveParkedCar: (id: Long, latitude: Double, longitude: Double) -> Unit = { _, _, _ -> },
+    onUpdateParkedCarDetails: (id: Long, note: String?, photoUri: String?) -> Unit =
+        { _, _, _ -> },
+    onEndParkedCar: () -> Unit = {},
+    onDismissParkedCarError: () -> Unit = {},
+    onRequestPermission: () -> Unit = {},
 ) {
     val parking = (parkingState as? ParkingUiState.Success)?.parking.orEmpty()
+    val parkedCar = parkedCarState.parkedCar
 
     // Guardar o id e nao o parque evita manter uma copia desatualizada da lista
     // depois de uma nova pesquisa.
     var selectedParkingId by rememberSaveable { mutableStateOf<String?>(null) }
     val selectedParking = parking.firstOrNull { it.id == selectedParkingId }
+
+    var editingParkedCar by rememberSaveable { mutableStateOf(false) }
+    var pinTarget by remember { mutableStateOf<PinTarget?>(null) }
 
     var mapCenter by remember {
         mutableStateOf(MapCenter(userLocation.latitude, userLocation.longitude))
@@ -138,6 +175,7 @@ private fun ParkingContent(
                 userLocation = userLocation,
                 parking = parking,
                 modifier = Modifier.fillMaxSize(),
+                parkedCar = parkedCar,
                 onParkingSelected = { selectedParkingId = it.id },
                 onCenterChanged = { latitude, longitude ->
                     mapCenter = MapCenter(latitude, longitude)
@@ -153,6 +191,18 @@ private fun ParkingContent(
                 Text(stringResource(R.string.parking_action_search_area))
             }
 
+            // So aparece sem carro guardado: com um registo ativo, a accao do
+            // cartao e terminar, nao voltar a guardar por cima.
+            if (parkedCar == null) {
+                ParkHereButton(
+                    capturing = parkedCarState is ParkedCarUiState.Capturing,
+                    onClick = { onParkHere(null) },
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .padding(12.dp),
+                )
+            }
+
             // A politica de tiles do OSM exige atribuicao visivel.
             Surface(
                 modifier = Modifier.align(Alignment.BottomEnd),
@@ -164,6 +214,22 @@ private fun ParkingContent(
                     modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
                 )
             }
+        }
+
+        if (parkedCar != null) {
+            ParkedCarCard(
+                parkedCar = parkedCar,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                onEdit = { editingParkedCar = true },
+                onAdjustOnMap = {
+                    pinTarget = PinTarget(
+                        latitude = parkedCar.latitude,
+                        longitude = parkedCar.longitude,
+                        parkedCarId = parkedCar.id,
+                    )
+                },
+                onEnd = onEndParkedCar,
+            )
         }
 
         ResultsHeader(
@@ -193,9 +259,110 @@ private fun ParkingContent(
             parking = selectedParking,
             onDismiss = { selectedParkingId = null },
             onNavigate = onNavigate,
+            onParkHere = { chosen ->
+                selectedParkingId = null
+                onParkHere(chosen)
+            },
+        )
+    }
+
+    if (editingParkedCar && parkedCar != null) {
+        ParkedCarEditSheet(
+            parkedCar = parkedCar,
+            onDismiss = { editingParkedCar = false },
+            onSave = { note, photoUri ->
+                editingParkedCar = false
+                onUpdateParkedCarDetails(parkedCar.id, note, photoUri)
+            },
+        )
+    }
+
+    pinTarget?.let { target ->
+        ParkedCarPinPicker(
+            initialLatitude = target.latitude,
+            initialLongitude = target.longitude,
+            onDismiss = { pinTarget = null },
+            onConfirm = { latitude, longitude ->
+                pinTarget = null
+                if (target.parkedCarId == null) {
+                    onParkAt(latitude, longitude)
+                } else {
+                    onMoveParkedCar(target.parkedCarId, latitude, longitude)
+                }
+            },
+        )
+    }
+
+    if (parkedCarState is ParkedCarUiState.CaptureFailed) {
+        CaptureFailedDialog(
+            reason = parkedCarState.reason,
+            onDismiss = onDismissParkedCarError,
+            onRequestPermission = {
+                onDismissParkedCarError()
+                onRequestPermission()
+            },
+            onPickOnMap = {
+                onDismissParkedCarError()
+                pinTarget = PinTarget(mapCenter.latitude, mapCenter.longitude)
+            },
         )
     }
 }
+
+/**
+ * Qualquer falha de captura termina na mesma saida — marcar o ponto a mao — mas
+ * so a falta de permissao tem outra coisa a oferecer antes disso.
+ */
+@Composable
+private fun CaptureFailedDialog(
+    reason: ParkedCarCaptureError,
+    onDismiss: () -> Unit = {},
+    onRequestPermission: () -> Unit = {},
+    onPickOnMap: () -> Unit = {},
+) {
+    val message = when (reason) {
+        ParkedCarCaptureError.PermissionMissing -> R.string.parked_error_permission
+        ParkedCarCaptureError.LocationDisabled -> R.string.parked_error_location_disabled
+        ParkedCarCaptureError.Unavailable -> R.string.parked_error_unavailable
+    }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.parked_title)) },
+        text = { Text(stringResource(message)) },
+        confirmButton = {
+            TextButton(onClick = onPickOnMap) {
+                Text(stringResource(R.string.parked_action_pick_on_map))
+            }
+        },
+        dismissButton = {
+            if (reason == ParkedCarCaptureError.PermissionMissing) {
+                TextButton(onClick = onRequestPermission) {
+                    Text(stringResource(R.string.location_action_allow))
+                }
+            } else {
+                TextButton(onClick = onDismiss) {
+                    Text(stringResource(R.string.parked_action_dismiss))
+                }
+            }
+        },
+    )
+}
+
+/** O carro ativo esta em dois estados diferentes; esta extensao evita repeti-lo. */
+private val ParkedCarUiState.parkedCar: ParkedCar?
+    get() = when (this) {
+        is ParkedCarUiState.Active -> parkedCar
+        is ParkedCarUiState.CaptureFailed -> parkedCar
+        else -> null
+    }
+
+/** `parkedCarId` a `null` significa um registo novo em vez de uma correcao. */
+private data class PinTarget(
+    val latitude: Double,
+    val longitude: Double,
+    val parkedCarId: Long? = null,
+)
 
 /** Contagem de resultados e seletor de raio, como no esboco da seccao 22. */
 @Composable

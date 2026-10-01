@@ -20,6 +20,7 @@ import pt.vcc.parking.location.LOCATION_PERMISSIONS
 import pt.vcc.parking.location.LocationUiState
 import pt.vcc.parking.location.LocationViewModel
 import pt.vcc.parking.location.hasLocationPermission
+import pt.vcc.parking.parked.ParkedCarViewModel
 
 /**
  * Liga a localizacao de `vp-02-location` a pesquisa de parques.
@@ -33,6 +34,7 @@ fun ParkingRoute(
     modifier: Modifier = Modifier,
     locationViewModel: LocationViewModel = viewModel(factory = LocationViewModel.Factory),
     parkingViewModel: ParkingViewModel = viewModel(factory = ParkingViewModel.Factory),
+    parkedCarViewModel: ParkedCarViewModel = viewModel(factory = ParkedCarViewModel.Factory),
 ) {
     val context = LocalContext.current
     val activity = LocalActivity.current
@@ -40,6 +42,7 @@ fun ParkingRoute(
     val locationState by locationViewModel.uiState.collectAsStateWithLifecycle()
     val parkingState by parkingViewModel.uiState.collectAsStateWithLifecycle()
     val radiusMeters by parkingViewModel.radiusMeters.collectAsStateWithLifecycle()
+    val parkedCarState by parkedCarViewModel.uiState.collectAsStateWithLifecycle()
 
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions(),
@@ -69,6 +72,7 @@ fun ParkingRoute(
         parkingState = parkingState,
         radiusMeters = radiusMeters,
         modifier = modifier,
+        parkedCarState = parkedCarState,
         onRequestPermission = { permissionLauncher.launch(LOCATION_PERMISSIONS) },
         onRefreshLocation = locationViewModel::refreshLocation,
         onOpenAppSettings = context::openAppSettings,
@@ -76,6 +80,12 @@ fun ParkingRoute(
         onRadiusSelected = parkingViewModel::onRadiusSelected,
         onSearchArea = parkingViewModel::searchArea,
         onRetry = parkingViewModel::retry,
+        onParkHere = parkedCarViewModel::parkHere,
+        onParkAt = { latitude, longitude -> parkedCarViewModel.parkAt(latitude, longitude) },
+        onMoveParkedCar = parkedCarViewModel::moveTo,
+        onUpdateParkedCarDetails = parkedCarViewModel::updateDetails,
+        onEndParkedCar = parkedCarViewModel::endActive,
+        onDismissParkedCarError = parkedCarViewModel::dismissCaptureError,
     )
 }
 

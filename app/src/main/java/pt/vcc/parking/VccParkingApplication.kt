@@ -5,6 +5,7 @@ import org.osmdroid.config.Configuration
 import pt.vcc.parking.data.local.ParkingDatabase
 import pt.vcc.parking.data.local.RoomParkingCache
 import pt.vcc.parking.data.remote.OverpassClient
+import pt.vcc.parking.data.repository.ParkedCarRepository
 import pt.vcc.parking.data.repository.ParkingRepository
 
 class VccParkingApplication : Application() {
@@ -16,6 +17,10 @@ class VccParkingApplication : Application() {
             remote = OverpassClient.create(),
             cache = RoomParkingCache(database.parkingDao()),
         )
+    }
+
+    val parkedCarRepository: ParkedCarRepository by lazy {
+        ParkedCarRepository(database.parkedCarDao())
     }
 
     override fun onCreate() {

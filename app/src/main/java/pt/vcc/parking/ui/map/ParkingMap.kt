@@ -19,6 +19,7 @@ import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
 import pt.vcc.parking.R
+import pt.vcc.parking.domain.model.ParkedCar
 import pt.vcc.parking.domain.model.Parking
 import pt.vcc.parking.location.UserLocation
 
@@ -33,16 +34,24 @@ fun ParkingMap(
     userLocation: UserLocation?,
     parking: List<Parking>,
     modifier: Modifier = Modifier,
+    parkedCar: ParkedCar? = null,
+    initialCenter: MapPoint? = null,
     onParkingSelected: (Parking) -> Unit = {},
+    onParkedCarSelected: () -> Unit = {},
     onCenterChanged: (latitude: Double, longitude: Double) -> Unit = { _, _ -> },
 ) {
     val mapView = rememberMapViewWithLifecycle()
     val currentOnParkingSelected by rememberUpdatedState(onParkingSelected)
+    val currentOnParkedCarSelected by rememberUpdatedState(onParkedCarSelected)
     val currentOnCenterChanged by rememberUpdatedState(onCenterChanged)
 
     // Sobrevive a rotacao: recentrar apos cada recomposicao anularia o gesto do
     // utilizador sempre que chegasse uma nova leitura do GPS.
-    var centeredOnUser by rememberSaveable { mutableStateOf(false) }
+    var centered by rememberSaveable { mutableStateOf(false) }
+
+    // Quem abre o mapa a escolher um ponto ja sabe onde quer comecar; so na
+    // falta desse ponto e que a posicao do utilizador serve de centro.
+    val center = initialCenter ?: userLocation?.let { MapPoint(it.latitude, it.longitude) }
 
     DisposableEffect(mapView) {
         val listener = object : MapListener {
@@ -61,14 +70,14 @@ fun ParkingMap(
         onDispose { mapView.removeMapListener(listener) }
     }
 
-    LaunchedEffect(mapView, userLocation) {
-        val location = userLocation ?: return@LaunchedEffect
-        if (centeredOnUser) return@LaunchedEffect
+    LaunchedEffect(mapView, center) {
+        val point = center ?: return@LaunchedEffect
+        if (centered) return@LaunchedEffect
 
         mapView.controller.setZoom(DEFAULT_ZOOM)
-        mapView.controller.setCenter(GeoPoint(location.latitude, location.longitude))
-        centeredOnUser = true
-        currentOnCenterChanged(location.latitude, location.longitude)
+        mapView.controller.setCenter(GeoPoint(point.latitude, point.longitude))
+        centered = true
+        currentOnCenterChanged(point.latitude, point.longitude)
     }
 
     AndroidView(
@@ -77,12 +86,16 @@ fun ParkingMap(
         update = { map ->
             map.overlays.clear()
             parking.forEach { map.overlays.add(map.parkingMarker(it, currentOnParkingSelected)) }
-            // Adicionado por ultimo para ficar por cima dos marcadores dos parques.
+            // Adicionados por ultimo para ficarem por cima dos marcadores dos parques.
+            parkedCar?.let { map.overlays.add(map.parkedCarMarker(it, currentOnParkedCarSelected)) }
             userLocation?.let { map.overlays.add(map.userMarker(it)) }
             map.invalidate()
         },
     )
 }
+
+/** Ponto do mapa em coordenadas simples, para o osmdroid nao sair deste pacote. */
+data class MapPoint(val latitude: Double, val longitude: Double)
 
 private fun MapView.notifyCenter(onCenterChanged: (Double, Double) -> Unit) {
     val center = mapCenter
@@ -100,6 +113,25 @@ private fun MapView.parkingMarker(
     infoWindow = null
     setOnMarkerClickListener { _, _ ->
         onParkingSelected(parking)
+        true
+    }
+}
+
+/**
+ * O carro usa um marcador proprio e e clicavel: no meio de varios pinos de
+ * parques, o unico que interessa ao regressar e este.
+ */
+private fun MapView.parkedCarMarker(
+    parkedCar: ParkedCar,
+    onParkedCarSelected: () -> Unit,
+): Marker = Marker(this).apply {
+    position = GeoPoint(parkedCar.latitude, parkedCar.longitude)
+    setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+    icon = context.drawable(R.drawable.ic_map_car)
+    title = context.getString(R.string.parked_marker)
+    infoWindow = null
+    setOnMarkerClickListener { _, _ ->
+        onParkedCarSelected()
         true
     }
 }
