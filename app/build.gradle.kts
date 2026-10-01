@@ -1,3 +1,4 @@
+import com.android.build.api.variant.impl.VariantOutputImpl
 import java.util.Properties
 
 plugins {
@@ -6,6 +7,10 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ksp)
 }
+
+// O APK leva o nome da app em vez do "app-release.apk" por omissao.
+val appFileName = "VCCParking"
+val appVersionName = "0.1.0"
 
 // Signing credentials live in keystore.properties (never versioned).
 val keystorePropertiesFile = rootProject.file("keystore.properties")
@@ -34,7 +39,7 @@ android {
         }
 
         versionCode = 1
-        versionName = "0.1.0"
+        versionName = appVersionName
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -48,6 +53,10 @@ android {
                 keyAlias = keystoreProperties.getProperty("keyAlias")
                 keyPassword = keystoreProperties.getProperty("keyPassword")
             }
+
+            // O minSdk 24 ja garante suporte a v2; o v3 permite rotacao de chave.
+            enableV2Signing = true
+            enableV3Signing = true
         }
     }
 
@@ -76,6 +85,16 @@ android {
 
     testOptions {
         unitTests.isReturnDefaultValues = true
+    }
+}
+
+androidComponents {
+    onVariants { variant ->
+        variant.outputs.forEach { output ->
+            (output as? VariantOutputImpl)?.outputFileName?.set(
+                "$appFileName-$appVersionName-${variant.name}.apk",
+            )
+        }
     }
 }
 
