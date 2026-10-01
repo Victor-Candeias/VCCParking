@@ -49,3 +49,9 @@ release/
 
 # Maestru derived index cache
 .maestru/.cache/
+
+# Signing material
+keystore.properties
+keystore/
+*.jks
+*.keystore
