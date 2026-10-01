@@ -3,12 +3,8 @@
     <string name="app_name">VCC Parking</string>
     <string name="osm_attribution">© OpenStreetMap contributors</string>
 
-    <string name="location_title">Localização</string>
     <string name="location_loading">A obter a sua localização…</string>
     <string name="location_idle">Toque em atualizar para obter a sua localização.</string>
-    <string name="location_coordinates">%1$.5f, %2$.5f</string>
-    <string name="location_accuracy">Precisão aproximada: %1$d m</string>
-    <string name="location_accuracy_unknown">Precisão desconhecida.</string>
     <string name="location_permission_rationale">A localização é necessária para procurar parques de estacionamento perto de si.</string>
     <string name="location_permission_denied">Sem acesso à localização não é possível procurar parques próximos. Pode ativar a permissão nas definições da aplicação.</string>
     <string name="location_disabled">A localização do dispositivo está desligada.</string>
@@ -18,4 +14,67 @@
     <string name="location_action_location_settings">Abrir definições de localização</string>
     <string name="location_action_retry">Tentar novamente</string>
     <string name="location_action_refresh">Atualizar</string>
+
+    <string name="parking_map_description">Mapa com os parques próximos</string>
+    <string name="parking_user_marker">A sua posição</string>
+    <string name="parking_action_search_area">Procurar nesta área</string>
+    <string name="parking_action_retry">Tentar novamente</string>
+    <string name="parking_action_navigate">Navegar</string>
+
+    <string name="parking_loading">A procurar parques…</string>
+    <string name="parking_idle">Aguarde enquanto preparamos a pesquisa.</string>
+    <string name="parking_empty">Não foram encontrados parques neste raio.</string>
+    <string name="parking_error">Não foi possível atualizar os parques neste momento.</string>
+    <string name="parking_error_cache">Não foi possível atualizar os dados. A mostrar a última informação disponível.</string>
+    <string name="parking_cache_notice">A mostrar dados guardados há %1$d min.</string>
+    <string name="parking_cache_notice_recent">A mostrar dados guardados agora mesmo.</string>
+    <string name="parking_navigation_unavailable">Não foi encontrada nenhuma aplicação de mapas.</string>
+
+    <plurals name="parking_found">
+        <item quantity="one">%1$d parque encontrado</item>
+        <item quantity="many">%1$d parques encontrados</item>
+        <item quantity="other">%1$d parques encontrados</item>
+    </plurals>
+
+    <string name="parking_radius_meters">%1$d m</string>
+    <string name="parking_radius_kilometers">%1$d km</string>
+    <string name="parking_distance_meters">%1$d m</string>
+    <string name="parking_distance_kilometers">%1$.1f km</string>
+    <string name="parking_distance_unknown">Distância indisponível</string>
+    <string name="parking_unnamed">Parque sem nome</string>
+    <string name="parking_capacity">%1$d lugares</string>
+    <string name="parking_fee_unknown">Informação de preço não disponível</string>
+    <string name="parking_zone_with_colour">%1$s (%2$s)</string>
+
+    <string name="parking_label_distance">Distância</string>
+    <string name="parking_label_capacity">Capacidade</string>
+    <string name="parking_label_type">Tipo</string>
+    <string name="parking_label_operator">Operador</string>
+    <string name="parking_label_access">Acesso</string>
+    <string name="parking_label_fee">Pago/Grátis</string>
+    <string name="parking_label_opening_hours">Horário</string>
+    <string name="parking_label_disabled_capacity">Lugares PMR</string>
+    <string name="parking_label_zone">Zona</string>
+    <string name="parking_label_phone">Telefone</string>
+    <string name="parking_label_website">Website</string>
+
+    <string name="parking_fee_yes">Pago</string>
+    <string name="parking_fee_no">Grátis</string>
+
+    <string name="parking_access_public">Público</string>
+    <string name="parking_access_customers">Clientes</string>
+    <string name="parking_access_permissive">Acesso tolerado</string>
+    <string name="parking_access_destination">Apenas para destino</string>
+    <string name="parking_access_permit">Com autorização</string>
+
+    <string name="parking_type_surface">Superfície</string>
+    <string name="parking_type_multi_storey">Silo</string>
+    <string name="parking_type_underground">Subterrâneo</string>
+    <string name="parking_type_rooftop">Cobertura</string>
+    <string name="parking_type_street_side">Via pública</string>
+    <string name="parking_type_lane">Faixa</string>
+    <string name="parking_type_layby">Baía</string>
+    <string name="parking_type_carports">Alpendre</string>
+    <string name="parking_type_garage_boxes">Boxes</string>
+    <string name="parking_type_sheds">Garagens</string>
 </resources>

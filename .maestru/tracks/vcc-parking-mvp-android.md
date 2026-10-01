@@ -21,6 +21,6 @@ owner: developer
 | vp-03-overpass | Implementar consulta Overpass, parsing e fallback | done | 2026-09-30 | developer | critical | 2026-09-30 |  | [vp-03-overpass](../specs/vcc-parking-mvp-android/vp-03-overpass-spec.md) |
 | vp-04-domain | Implementar modelo de domínio, filtros e distância | done | 2026-09-30 | developer | high | 2026-09-30 |  | [vp-04-domain](../specs/vcc-parking-mvp-android/vp-04-domain-spec.md) |
 | vp-05-cache | Implementar cache local com Room | done | 2026-09-30 | developer | high | 2026-10-01 |  | [vp-05-cache](../specs/vcc-parking-mvp-android/vp-05-cache-spec.md) |
-| vp-06-ui | Implementar UI, estados e navegação | backlog | 2026-09-30 |  | high |  |  | [vp-06-ui](../specs/vcc-parking-mvp-android/vp-06-ui-spec.md) |
+| vp-06-ui | Implementar UI, estados e navegação | done | 2026-09-30 | developer | high | 2026-10-01 |  | [vp-06-ui](../specs/vcc-parking-mvp-android/vp-06-ui-spec.md) |
 | vp-07-testing | Testar e validar o MVP | backlog | 2026-09-30 |  | high |  |  |  |
 <!-- /maestru:work-items-list -->
