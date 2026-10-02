@@ -19,6 +19,9 @@ room = "2.8.5"
 playServicesLocation = "21.4.0"
 osmdroid = "6.1.20"
 
+# vp-16-android-auto: biblioteca de templates do Android for Cars.
+carApp = "1.7.0"
+
 junit = "4.13.2"
 androidxJunit = "1.3.0"
 espressoCore = "3.7.0"
@@ -56,6 +59,10 @@ androidx-room-testing = { group = "androidx.room", name = "room-testing", versio
 
 play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
 osmdroid-android = { group = "org.osmdroid", name = "osmdroid-android", version.ref = "osmdroid" }
+
+androidx-car-app = { group = "androidx.car.app", name = "app", version.ref = "carApp" }
+androidx-car-app-projected = { group = "androidx.car.app", name = "app-projected", version.ref = "carApp" }
+androidx-car-app-testing = { group = "androidx.car.app", name = "app-testing", version.ref = "carApp" }
 
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidxJunit" }

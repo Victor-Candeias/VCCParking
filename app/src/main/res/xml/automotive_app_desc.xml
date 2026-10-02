@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  vp-16-android-auto: declara a aplicacao como app de templates.
+
+  Sem este ficheiro o Android Auto ignora o `CarAppService`, mesmo com o servico
+  correctamente declarado no manifest.
+-->
+<automotiveApp>
+    <uses name="template" />
+</automotiveApp>

@@ -314,4 +314,18 @@
     <string name="parking_badge_covered">Coberto</string>
     <string name="parking_badge_disabled">Mobilidade reduzida</string>
     <string name="parking_badge_charging">Carregamento</string>
+
+    <!-- vp-16-android-auto: interface projetada no ecrã do carro -->
+    <string name="car_nearby_title">Parques perto de si</string>
+    <string name="car_action_refresh">Atualizar</string>
+    <string name="car_action_parked_car">O meu carro</string>
+    <string name="car_loading">A carregar…</string>
+
+    <string name="car_permission_missing">Abra a VCC Parking no telemóvel e permita o acesso à localização.</string>
+    <string name="car_location_unavailable">Não foi possível obter a sua posição. Verifique a localização no telemóvel.</string>
+
+    <string name="car_parked_title">O seu carro</string>
+    <string name="car_no_parked_car">Ainda não guardou onde estacionou. Toque em «Estacionei aqui» quando parar.</string>
+    <string name="car_parked_saved">Posição do carro guardada.</string>
+    <string name="car_parked_ended">Estacionamento terminado.</string>
 </resources>

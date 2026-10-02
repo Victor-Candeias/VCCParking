@@ -150,8 +150,15 @@ dependencies {
     implementation(libs.play.services.location)
     implementation(libs.osmdroid.android)
 
+    // vp-16-android-auto: `app` traz os templates e o `CarAppService`;
+    // `app-projected` e o host de projecao do Android Auto, so necessario em
+    // tempo de execucao no telemovel.
+    implementation(libs.androidx.car.app)
+    implementation(libs.androidx.car.app.projected)
+
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.androidx.car.app.testing)
 
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.room.testing)

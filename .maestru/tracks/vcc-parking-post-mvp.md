@@ -27,4 +27,5 @@ informação apresentada. Pressupõe o MVP validado em `vp-07-testing`.
 | vp-12-rich-details | Enriquecer a informação apresentada dos parques | done | 2026-10-01 | developer | medium | 2026-10-01 |  |  | [vp-12-rich-details](../specs/vcc-parking-post-mvp/vp-12-rich-details-spec.md) |
 | vp-13-data-sources | Avaliar fontes de dados alternativas à Overpass | backlog | 2026-10-01 | developer | medium |  |  |  | [vp-13-data-sources](../specs/vcc-parking-post-mvp/vp-13-data-sources-spec.md) |
 | vp-14-realtime | Integrar dados de lotação e preços em tempo real | backlog | 2026-10-01 | developer | low |  |  | vp-13-data-sources | [vp-14-realtime](../specs/vcc-parking-post-mvp/vp-14-realtime-spec.md) |
+| vp-16-android-auto | Suportar Android Auto | done | 2026-10-02 | developer | high | 2026-10-02 |  |  | [vp-16-android-auto](../specs/vcc-parking-post-mvp/vp-16-android-auto-spec.md) |
 <!-- /maestru:work-items-list -->

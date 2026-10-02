@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -37,6 +38,18 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.VCCParking">
 
+        <!-- vp-16-android-auto: sem este meta-data o Android Auto nao reconhece
+             a aplicacao, mesmo com o CarAppService declarado. -->
+        <meta-data
+            android:name="com.google.android.gms.car.application"
+            android:resource="@xml/automotive_app_desc" />
+
+        <!-- Nenhum dos templates usados exige nivel superior; o 1 abrange todos
+             os hosts, incluindo os veiculos mais antigos. -->
+        <meta-data
+            android:name="androidx.car.app.minCarApiLevel"
+            android:value="1" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -48,6 +61,20 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- vp-16-android-auto: interface projetada no ecra do carro.
+             Tem de ser exportado para o host do Android Auto lhe poder ligar;
+             quem se pode ligar e decidido pelo HostValidator do servico, e nao
+             por uma permissao do manifest. -->
+        <service
+            android:name=".car.VccParkingCarAppService"
+            android:exported="true"
+            tools:ignore="ExportedService">
+            <intent-filter>
+                <action android:name="androidx.car.app.CarAppService" />
+                <category android:name="androidx.car.app.category.POI" />
+            </intent-filter>
+        </service>
 
         <!-- vp-11-reminders: nenhum destes recetores e exportado. Os alarmes e
              as accoes das notificacoes sao disparados pela propria app, e deixar
