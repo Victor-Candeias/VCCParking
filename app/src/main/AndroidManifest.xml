@@ -16,6 +16,10 @@
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
+    <!-- vp-16-android-auto: obrigatoria nas apps POI para usar o
+         PlaceListMapTemplate; sem ela o host recusa o ecra do mapa. -->
+    <uses-permission android:name="androidx.car.app.MAP_TEMPLATES" />
+
     <!-- Seccao 25: visibilidade do pacote necessaria para resolver o esquema geo:.
          O google.navigation: e o unico que aceita modo a pe (vp-09-return-route);
          sem esta entrada a resolucao falharia sempre e a app cairia no geo:. -->
