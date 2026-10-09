@@ -51,4 +51,26 @@ class CarPlaceLabelTest {
         assertTrue(CarPlaceLabel.limitedTo(emptyList<Int>(), contentLimit = 6).isEmpty())
         assertTrue(CarPlaceLabel.limitedTo(emptyList<Int>(), contentLimit = 0).isEmpty())
     }
+
+    @Test
+    fun `a huge host limit is capped so the template fits in the binder`() {
+        val places = (1..280).toList()
+
+        val visible = CarPlaceLabel.placesFor(places, hostLimit = 1000)
+
+        assertEquals(CarPlaceLabel.MAX_PLACES, visible.size)
+        assertEquals(places.take(CarPlaceLabel.MAX_PLACES), visible)
+    }
+
+    @Test
+    fun `a host limit below the cap is still respected`() {
+        val places = (1..280).toList()
+
+        assertEquals(listOf(1, 2, 3, 4, 5, 6), CarPlaceLabel.placesFor(places, hostLimit = 6))
+    }
+
+    @Test
+    fun `the capped list still shows something with an invalid host limit`() {
+        assertEquals(listOf(1), CarPlaceLabel.placesFor(listOf(1, 2, 3), hostLimit = 0))
+    }
 }

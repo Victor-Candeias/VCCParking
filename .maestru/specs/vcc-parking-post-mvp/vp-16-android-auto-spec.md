@@ -119,7 +119,7 @@ o número não é fixo e varia com o veículo, por isso é pedido e não assumid
 
 | Decisão | Valor | Motivo |
 |---|---|---|
-| Nº de parques | `ConstraintManager.CONTENT_LIMIT_TYPE_PLACE_LIST` | É o host que conhece o ecrã |
+| Nº de parques | Mínimo entre `ConstraintManager.CONTENT_LIMIT_TYPE_PLACE_LIST` e 20 | É o host que conhece o ecrã, mas pode anunciar 1000 e o template tem de caber no Binder (`vp-17-auto-list-limit`) |
 | Etiqueta do marcador | Índice, no máximo 3 caracteres | Limite de `PlaceMarker` |
 | Ordem | Distância crescente | Já garantida por `nearestFrom` |
 

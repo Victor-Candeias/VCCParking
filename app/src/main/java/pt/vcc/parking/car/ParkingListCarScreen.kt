@@ -109,11 +109,13 @@ class ParkingListCarScreen(carContext: CarContext) : Screen(carContext) {
     /**
      * Quantas linhas cabem e decisao do veiculo, nao da app: o mesmo APK corre
      * em ecras muito diferentes e o host e o unico que sabe qual e o limite.
+     * Mas o host pode anunciar 1000, e o template tem de caber no Binder, por
+     * isso a app impoe o seu proprio teto por cima.
      */
     private fun visible(parking: List<Parking>): List<Parking> {
         val manager = carContext.getCarService(ConstraintManager::class.java)
         val limit = manager.getContentLimit(ConstraintManager.CONTENT_LIMIT_TYPE_PLACE_LIST)
-        return CarPlaceLabel.limitedTo(parking, limit)
+        return CarPlaceLabel.placesFor(parking, limit)
     }
 
     private fun row(index: Int, parking: Parking): Row {
