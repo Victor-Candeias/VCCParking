@@ -17,6 +17,13 @@ import pt.vcc.parking.R
 /** Zoom de rua: cobre o raio de 1 km sugerido na seccao 20. */
 internal const val DEFAULT_ZOOM = 15.0
 
+/**
+ * Zoom de quarteirao para o ecra principal: o foco e o estacionamento a volta
+ * do utilizador, nao a cidade. Num telemovel de 1080x2424 em Lisboa mostra
+ * ~500 m de largura e ~1,1 km de altura com o painel recolhido.
+ */
+internal const val USER_ZOOM = 18.0
+
 /** Centro do exemplo da seccao 3, usado ate haver localizacao. */
 internal const val FALLBACK_LATITUDE = 38.7253
 internal const val FALLBACK_LONGITUDE = -9.1500

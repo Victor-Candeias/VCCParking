@@ -18,6 +18,7 @@
     <string name="parking_map_description">Mapa com os parques próximos</string>
     <string name="parking_user_marker">A sua posição</string>
     <string name="parking_action_search_area">Procurar nesta área</string>
+    <string name="parking_action_my_location">Centrar na minha posição</string>
     <string name="parking_action_retry">Tentar novamente</string>
     <string name="parking_action_navigate">Navegar</string>
 
@@ -80,6 +81,7 @@
     <!-- vp-08-park-save: registo do local onde o carro ficou -->
     <string name="parked_marker">O seu carro</string>
     <string name="parked_title">O seu carro</string>
+    <string name="parked_action_details">Ver detalhes do carro</string>
     <string name="parked_action_park_here">Estacionei aqui</string>
     <string name="parked_action_park_at_parking">Estacionei neste parque</string>
     <string name="parked_capturing">A guardar a posição do carro…</string>

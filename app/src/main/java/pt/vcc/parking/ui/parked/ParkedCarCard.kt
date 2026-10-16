@@ -34,6 +34,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
@@ -208,10 +209,11 @@ fun ParkedCarCard(
  * que a app tem de ser impossivel de ignorar.
  */
 @Composable
-private fun ReminderStatus(
+internal fun ReminderStatus(
     reminder: ParkingReminder?,
     nowMillis: Long,
     modifier: Modifier = Modifier,
+    style: TextStyle = MaterialTheme.typography.bodyMedium,
 ) {
     val remaining = reminder?.remainingMillis(nowMillis)
 
@@ -229,7 +231,7 @@ private fun ReminderStatus(
     Text(
         text = text,
         modifier = modifier,
-        style = MaterialTheme.typography.bodyMedium,
+        style = style,
         color = color,
     )
 }

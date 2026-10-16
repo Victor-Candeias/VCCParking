@@ -37,6 +37,8 @@ fun ParkingMap(
     modifier: Modifier = Modifier,
     parkedCar: ParkedCar? = null,
     initialCenter: MapPoint? = null,
+    zoom: Double = DEFAULT_ZOOM,
+    recenterRequest: Int = 0,
     routePoints: List<MapPoint> = emptyList(),
     onParkingSelected: (Parking) -> Unit = {},
     onParkedCarSelected: () -> Unit = {},
@@ -46,6 +48,7 @@ fun ParkingMap(
     val currentOnParkingSelected by rememberUpdatedState(onParkingSelected)
     val currentOnParkedCarSelected by rememberUpdatedState(onParkedCarSelected)
     val currentOnCenterChanged by rememberUpdatedState(onCenterChanged)
+    val currentUserLocation by rememberUpdatedState(userLocation)
 
     // Sobrevive a rotacao: recentrar apos cada recomposicao anularia o gesto do
     // utilizador sempre que chegasse uma nova leitura do GPS.
@@ -76,10 +79,23 @@ fun ParkingMap(
         val point = center ?: return@LaunchedEffect
         if (centered) return@LaunchedEffect
 
-        mapView.controller.setZoom(DEFAULT_ZOOM)
+        mapView.controller.setZoom(zoom)
         mapView.controller.setCenter(GeoPoint(point.latitude, point.longitude))
         centered = true
         currentOnCenterChanged(point.latitude, point.longitude)
+    }
+
+    // Cada incremento e um pedido explicito do utilizador para voltar a sua
+    // posicao; o valor inicial 0 nao move o mapa.
+    LaunchedEffect(mapView, recenterRequest) {
+        if (recenterRequest == 0) return@LaunchedEffect
+        val location = currentUserLocation ?: return@LaunchedEffect
+
+        mapView.controller.animateTo(
+            GeoPoint(location.latitude, location.longitude),
+            zoom,
+            RECENTER_ANIMATION_MILLIS,
+        )
     }
 
     AndroidView(
@@ -158,3 +174,5 @@ private fun Context.drawable(resourceId: Int) = ContextCompat.getDrawable(this, 
 
 /** Uma linha precisa de dois pontos; com menos nao ha nada para desenhar. */
 private const val MINIMUM_ROUTE_POINTS = 2
+
+private const val RECENTER_ANIMATION_MILLIS = 600L
